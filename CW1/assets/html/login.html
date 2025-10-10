@@ -1,28 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Detection Game</title>
-    <link rel="stylesheet" href="../css/style.css">
-</head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>The Detection Game</title>
+        <link rel="stylesheet" href="../css/style.css">
+    </head>
 
-<body>
-    <div class="header-container">
-        <nav>
-            <img src="../img/logo.png" alt="The Detection Game" class="header-logo">
-            <div class="nav-links">
-                <a href="../../index.html" class="active">Home</a>
-                <a href="play.html">Play</a>
-                <a href="leaderboard.html">Leaderboard</a>
-                <a href="https://github.com/Syed-Nihaal/Robot-Steatlh-Game-CW1">GitHub</a>
-            </div>
-        </nav>
-    </div>
+    <body class="login-page">
+        <div class="header-container">
+            <nav>
+                <img src="../img/logo.png" alt="The Detection Game" class="header-logo">
+                <div class="nav-links">
+                    <a href="../../index.html" class="active">Home</a>
+                    <a href="play.html" class="active">Play</a>
+                    <a href="leaderboard.html" class="active">Leaderboard</a>
+                    <a href="https://github.com/Syed-Nihaal/Robot-Steatlh-Game-CW1" class="active">GitHub</a>
+                </div>
+            </nav>
+        </div>
 
-    <hr>
+        <hr>
 
-    <div class="index-buttons">
-
-    </div>
-</body>
+        <div class="form-container">
+            <h2 style="text-align: center;">Login</h2>
+            <br>
+            <form id="loginForm">
+                <label for="username">Username</label>
+                <input type="username" id="username" name="username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit" class="button login-button">Login</button>
+                <p class="alt-link">
+                    Please register if you don't have an account. <a href="register.html">Register here</a>.
+                </p>
+            </form>
+        </div>
+    </body>
+</html>

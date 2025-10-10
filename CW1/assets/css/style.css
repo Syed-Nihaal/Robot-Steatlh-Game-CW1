@@ -66,3 +66,65 @@ hr {
     border: none;
     border-top: 1px solid #eee;
 }
+
+.form-container {
+  max-width: 400px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.95);
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container input,
+.form-container button {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-container input {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0 1rem 0;
+  border: none;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.form-container input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.login-page .login-button {
+  background-color: rgba(50, 205, 50, 0.9);
+  width: 100%;
+  text-align: center;
+}
+
+.register-page .register-button {
+  background-color: rgba(242, 113, 28, 1.0);
+  width: 100%;
+  text-align: center;
+}
+
+.alt-link {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.login-page .alt-link a {
+  color: rgba(242, 113, 28, 1.0);
+  text-decoration: none;
+}
+
+.register-page .alt-link a {
+  color: rgba(50, 205, 50, 0.9);
+  text-decoration: none;
+}
+.alt-link a:hover {
+  text-decoration: underline;
+}
