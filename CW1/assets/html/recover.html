@@ -8,7 +8,7 @@
         <!-- Link to external CSS stylesheet -->
         <link rel="stylesheet" href="../css/style.css">
     </head>
-    <body class="login-page">
+    <body class="recover-page">
         <!-- Header section -->
         <div class="header-container">
             <nav>
@@ -33,24 +33,27 @@
         </div>
         <!-- divider line -->
         <hr>
-        <!-- Login form section -->
+        <!-- Recover form section -->
         <div class="form-container">
-            <h2 style="text-align: center;">Login</h2>
+            <h2 style="text-align: center;">Recover Your Account</h2>
             <br>
-            <form id="loginForm">
-                <!-- Input fields for username and password -->
+            <form id="recoverForm">
+                <!-- Input fields for email, username or password -->
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
                 <label for="username">Username</label>
-                <input type="username" id="username" name="username" required>
+                <input type="username" id="username" name="username">
+                <h3 style="text-align: center;">OR</h3>
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-                <button type="submit" class="button login-button">Login</button>
+                <input type="password" id="password" name="password">
+                <button type="submit" class="button recover-button">Recover</button>
                 <label id="messageLabel" style="display:block; margin-top:10px;"></label>
                 <!-- Link to external Login JavaScript file -->
-                <script src="../javascript/login.js"></script>
+                <script src="../javascript/recover.js"></script>
                 <br>
-                <!-- Link to reset password -->
+                <!-- Link to login page -->
                 <p class="alt-link-a">
-                    Forgot your username or password?. <a href="recover.html">Recover here</a>.
+                    Remember your username and password?. <a href="login.html">Login here</a>.
                 </p>
                 <br>
                 <!-- Link to register page -->
