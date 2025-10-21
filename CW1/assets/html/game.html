@@ -15,7 +15,7 @@
                     <a href="../../index.html" class="active">
                         <img src="../img/home.png" alt="Home" class="nav-icons">
                     </a>
-                    <a href="play.html" class="active">
+                    <a href="game.html" class="active">
                         <img src="../img/play.png" alt="Play" class="nav-icons">
                     </a>
                     <a href="leaderboard.html" class="active">
@@ -29,8 +29,25 @@
         </div>
 
         <hr>
+        <!-- Game container with canvas and UI -->
+        <div class="game-container">
+            <!-- UI panel showing game statistics -->
+            <div class="game-ui">
+                <div>Score: <span id="scoreDisplay">0</span></div>
+                <div>Coins: <span id="coinDisplay">0/5</span></div>
+                <div>Time: <span id="timerDisplay">0</span>s</div>
+            </div>
+            
+            <!-- Main game canvas where everything is drawn -->
+            <canvas id="gameCanvas" src="../img/game_bg.png" width="800" height="600"></canvas>
+            
+            <!-- Control instructions for the player -->
+            <div class="controls-info">
+                <p><strong>Controls:</strong> Arrow Keys or WASD to Move | SPACE to Jump | P to Pause</p>
+            </div>
+        </div>
 
-        
-
+        <!-- Link to game JavaScript file -->
+        <script src="../javascript/game.js"></script>
     </body>
 </html>

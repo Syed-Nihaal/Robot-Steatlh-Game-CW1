@@ -145,7 +145,7 @@ hr {
   text-decoration: none;
 }
 
-.login-page .alt-link-b a {
+.login-page .alt-link-b a{
   color: rgba(242, 113, 28, 1.0);
   text-decoration: none;
 }
@@ -167,4 +167,41 @@ hr {
 
 .alt-link a:hover {
   text-decoration: underline;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.game-ui {
+    display: flex;
+    justify-content: space-around;
+    width: 800px;
+    background-color: #0f3460;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#gameCanvas {
+    border: 3px solid #0f3460;
+    border-radius: 0 0 10px 10px;
+    background-color: #1e232e;
+}
+
+.controls-info {
+    margin-top: 15px;
+    text-align: center;
+    background-color: #0f3460;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.controls-info p {
+    margin: 0;
 }
