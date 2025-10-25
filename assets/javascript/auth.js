@@ -1,69 +1,89 @@
-// Check if user is logged in
-function checkLoginStatus() {
-    return localStorage.getItem('loggedInUser') !== null;
-}
+// Authentication Manager class to handle user authentication
+class AuthManager {
+    // Constructor to initialise the authentication manager
+    constructor() {
+        this.loggedInUserKey = 'loggedInUser'; // LocalStorage key for logged-in user
+        this.protectedPages = ['game.html', 'leaderboard.html']; // Pages that require authentication
+    }
 
-// Get current logged in user
-function getCurrentUser() {
-    return localStorage.getItem('loggedInUser');
-}
+    // Check if user is currently logged in
+    checkLoginStatus() {
+        return localStorage.getItem(this.loggedInUserKey) !== null;
+    }
 
-// Logout function
-function logout() {
-    localStorage.removeItem('loggedInUser');
-    window.location.href = 'login.html';
-}
+    // Get the username of the currently logged-in user
+    getCurrentUser() {
+        return localStorage.getItem(this.loggedInUserKey);
+    }
 
-// Update navigation based on login status
-function updateNavigation() {
-    const user = getCurrentUser();
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (navLinks) {
-        // Remove existing logout button if any
-        const existingLogout = navLinks.querySelector('.logout-nav-button');
-        if (existingLogout) {
-            existingLogout.remove();
-        }
+    // Log out the current user and redirect to login page
+    logout() {
+        localStorage.removeItem(this.loggedInUserKey); // Remove logged-in user from localStorage
+        window.location.href = 'login.html'; // Redirect to login page
+    }
+
+    // Update navigation bar based on login status
+    updateNavigation() {
+        const user = this.getCurrentUser(); // Get current logged-in user
+        const navLinks = document.querySelector('.nav-links'); // Get navigation links container
         
-        // Remove existing user info if any
-        const existingUserInfo = navLinks.querySelector('.user-info');
-        if (existingUserInfo) {
-            existingUserInfo.remove();
+        if (navLinks) {
+            // Remove existing logout button if any
+            const existingLogout = navLinks.querySelector('.logout-nav-button');
+            if (existingLogout) {
+                existingLogout.remove(); // Remove old logout button
+            }
+            
+            // Remove existing user info if any
+            const existingUserInfo = navLinks.querySelector('.user-info');
+            if (existingUserInfo) {
+                existingUserInfo.remove(); // Remove old user info
+            }
+            
+            // Add logout button to navbar if user is logged in
+            if (user) {
+                // Create logout button element for navbar
+                const logoutButton = document.createElement('a');
+                logoutButton.href = '#'; // Set href to prevent page navigation
+                logoutButton.className = 'logout-nav-button'; // Set CSS class
+                logoutButton.innerHTML = `
+                    <img src="../img/logout.png" alt="Logout" class="nav-icons">
+                `; // Set logout icon
+                
+                // Add click event listener for logout functionality
+                logoutButton.onclick = (e) => {
+                    e.preventDefault(); // Prevent default anchor behaviour
+                    this.logout(); // Call logout method
+                };
+                
+                // Add title attribute for hover tooltip showing username
+                logoutButton.title = `Logout (${user})`;
+                
+                // Append logout button to navigation
+                navLinks.appendChild(logoutButton);
+            }
         }
+    }
+
+    // Check if current page requires authentication and redirect if not logged in
+    protectPage() {
+        const currentPage = window.location.pathname.split('/').pop(); // Get current page filename
         
-        // Add logout button to navbar if logged in
-        if (user) {
-            // Create logout button for navbar
-            const logoutButton = document.createElement('a');
-            logoutButton.href = '#';
-            logoutButton.className = 'logout-nav-button';
-            logoutButton.innerHTML = `
-                <img src="../img/logout.png" alt="Logout" class="nav-icons">
-            `;
-            logoutButton.onclick = function(e) {
-                e.preventDefault();
-                logout();
-            };
-            
-            // Add title for hover effect
-            logoutButton.title = `Logout (${user})`;
-            
-            // Add to navigation
-            navLinks.appendChild(logoutButton);
+        // If current page is protected and user is not logged in
+        if (this.protectedPages.includes(currentPage) && !this.checkLoginStatus()) {
+            window.location.href = 'login.html'; // Redirect to login page
         }
+    }
+
+    // Initialise authentication manager
+    init() {
+        this.updateNavigation(); // Update navigation based on login status
+        this.protectPage(); // Protect page if necessary
     }
 }
 
-// Initialize navigation on page load
+// Create instance of AuthManager and initialise when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    updateNavigation();
-    
-    // Redirect to login if trying to access protected pages without authentication
-    const protectedPages = ['game.html', 'leaderboard.html'];
-    const currentPage = window.location.pathname.split('/').pop();
-    
-    if (protectedPages.includes(currentPage) && !checkLoginStatus()) {
-        window.location.href = 'login.html';
-    }
+    const authManager = new AuthManager(); // Create new AuthManager instance
+    authManager.init(); // Initialise authentication manager
 });

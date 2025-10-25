@@ -4,7 +4,7 @@
         <!-- Metadata for the document -->
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>The Detection Game</title>
+        <title>The Detection Game - Login</title>
         <!-- Link to external CSS stylesheet -->
         <link rel="stylesheet" href="../css/style.css">
     </head>
@@ -17,16 +17,16 @@
                 <img src="../img/logo.png" alt="The Detection Game" class="header-logo">
                 <!-- Navigation links -->
                 <div class="nav-links">
-                    <a href="../../index.html" class="active">
+                    <a href="../../index.html">
                         <img src="../img/home.png" alt="Home" class="nav-icons">
                     </a>
-                    <a href="game.html" class="active">
+                    <a href="game.html">
                         <img src="../img/play.png" alt="Play" class="nav-icons">
                     </a>
-                    <a href="leaderboard.html" class="active">
+                    <a href="leaderboard.html">
                         <img src="../img/leaderboard.png" alt="Leaderboard" class="nav-icons">
                     </a>
-                    <a href="https://github.com/Syed-Nihaal/Robot-Steatlh-Game-CW1" class="active">
+                    <a href="https://github.com/Syed-Nihaal/Robot-Steatlh-Game-CW1">
                         <img src="../img/github.png" alt="GitHub" class="nav-icons">
                     </a>
                     <!-- Link to authentication JavaScript file -->
@@ -35,7 +35,7 @@
             </nav>
         </div>
 
-        <!-- divider line -->
+        <!-- Divider line -->
         <hr>
         
         <!-- Login form section -->
@@ -45,17 +45,18 @@
             <form id="loginForm">
                 <!-- Input fields for username and password -->
                 <label for="username">Username</label>
-                <input type="username" id="username" name="username" required>
+                <input type="text" id="username" name="username" required>
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
                 <button type="submit" class="button login-button">Login</button>
+                <!-- Message label for displaying login status -->
                 <label id="messageLabel" style="display:block; margin-top:10px;"></label>
                 <!-- Link to login JavaScript file -->
                 <script src="../javascript/login.js"></script>
                 <br>
                 <!-- Link to reset password -->
                 <p class="alt-link-a">
-                    Forgot your username or password?. <a href="recover.html">Recover here</a>.
+                    Forgot your username or password? <a href="recover.html">Recover here</a>.
                 </p>
                 <br>
                 <!-- Link to register page -->

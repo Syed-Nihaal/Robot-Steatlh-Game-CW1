@@ -1,3 +1,9 @@
+// Import all game entity modules
+import { Player } from './player.js';
+import { Robot } from './robot.js';
+import { Platform } from './platform.js';
+import { Coin } from './coin.js';
+
 // Creating Game class
 class Game {
     // Creating Game constructor function
@@ -42,10 +48,10 @@ class Game {
         platforms.push(new Platform(0, 550, 800, 50));
         // Creating random mid-level platforms logic
         for (let i = 0; i < num; i++) {
-            const width = 100 + Math.random() * 80; // Random width
+            const width = 100 + Math.random() * 80; // Random width between 100-180
             const height = 20; // Constant height
             const x = Math.random() * (this.canvas.width - width); // Random x position
-            const y = 150 + Math.random() * 350; // Random y position
+            const y = 150 + Math.random() * 350; // Random y position between 150-500
             platforms.push(new Platform(x, y, width, height)); // Create platform
         }
         return platforms;
@@ -57,23 +63,28 @@ class Game {
         const newCoins = [];
         // Creating random coins logic
         for (let i = 0; i < numCoins; i++) {
-            const p = this.platforms[Math.floor(Math.random() * (this.platforms.length - 1)) + 1]; // Random platform
-            const x = p.x + Math.random() * (p.width - 20) + 10; // Random x position
-            const y = p.y - 15; // Random y position
-            newCoins.push(new Coin(x, y, 12)); // Create coin
+            const p = this.platforms[Math.floor(Math.random() * (this.platforms.length - 1)) + 1]; // Random platform (excluding ground)
+            const x = p.x + Math.random() * (p.width - 20) + 10; // Random x position on platform
+            const y = p.y - 15; // Position above platform
+            newCoins.push(new Coin(x, y, 12)); // Create coin with radius 12
         }
         return newCoins;
     }
     
-    // Creating event listeners for instantaneous keyboard input for function
+    // Creating event listeners for instantaneous keyboard input function
     setupEventListeners() {
         // Adding event listener for keydown
         window.addEventListener('keydown', e => {
-            this.keys[e.key] = true; // Adding key
+            this.keys[e.key] = true; // Mark key as pressed
             // Adding jump keyboard input
             if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp') {
-                e.preventDefault(); // Preventing default behavior
+                e.preventDefault(); // Preventing default behavior (page scroll)
                 this.player.jump(); // Calling jump function
+            }
+            // Adding drop down keyboard input
+            if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown') {
+                e.preventDefault(); // Preventing default behavior (page scroll)
+                this.player.dropDown(); // Calling drop down function
             }
             // Adding pause keyboard input           
             if (e.key === 'p' || e.key === 'P') {
@@ -82,7 +93,7 @@ class Game {
                     this.gameState = 'paused'; // Set game state to 'paused'
                 } else if (this.gameState === 'paused') {
                     this.gameState = 'playing'; // Set game state to 'playing'
-                    this.lastTime = Date.now(); // Reset last time
+                    this.lastTime = Date.now(); // Reset last time to prevent time jump
                 }
             }
             // Adding restart keyboard input
@@ -93,7 +104,7 @@ class Game {
         
         // Adding event listener for keyup
         window.addEventListener('keyup', e => {
-            this.keys[e.key] = false; // Removing key
+            this.keys[e.key] = false; // Mark key as released
         });
     }
     
@@ -114,14 +125,14 @@ class Game {
     checkPlatformCollisions() {
         // Adding platform collision logic
         this.platforms.forEach(p => {
-            // If player is falling
-            if (this.player.velocityY > 0) {
+            // If player is falling and not actively dropping through platforms
+            if (this.player.velocityY > 0 && !this.player.isDropping) {
                 // If player is colliding with platform
                 if (this.player.x < p.x + p.width && // Left edge of player is less than right edge of platform
                     this.player.x + this.player.width > p.x && // Right edge of player is greater than left edge of platform
-                    this.player.y + this.player.height > p.y && // Top edge of player is greater than bottom edge of platform
-                    this.player.y + this.player.height < p.y + p.height) {
-                    this.player.y = p.y - this.player.height; // Set player y position to platform y position
+                    this.player.y + this.player.height > p.y && // Bottom edge of player is greater than top edge of platform
+                    this.player.y + this.player.height < p.y + p.height) { // Bottom edge of player is less than bottom edge of platform
+                    this.player.y = p.y - this.player.height; // Set player y position to top of platform
                     this.player.velocityY = 0; // Stop vertical movement
                     this.player.isOnGround = true; // Player is on ground
                 }
@@ -131,20 +142,20 @@ class Game {
     
     // Creating coin collection function
     checkCoinCollection() {
-        const px = this.player.x + this.player.width / 2; // Player x position
-        const py = this.player.y + this.player.height / 2; // Player y position
+        const px = this.player.x + this.player.width / 2; // Player centre x position
+        const py = this.player.y + this.player.height / 2; // Player centre y position
         // Adding coin collection logic
         this.coins.forEach(coin => {
             // If coin is not collected
             if (!coin.collected) {
-                const dx = px - coin.x; // Distance between player and coin
-                const dy = py - coin.y; // Distance between player and coin
-                const dist = Math.sqrt(dx * dx + dy * dy); // Distance between player and coin
-                // If player is within the radius of the coin
+                const dx = px - coin.x; // Horizontal distance between player and coin
+                const dy = py - coin.y; // Vertical distance between player and coin
+                const dist = Math.sqrt(dx * dx + dy * dy); // Calculate Euclidean distance
+                // If player is within the radius of the coin (collision detection)
                 if (dist < this.player.width / 2 + coin.radius) {
-                    coin.collected = true; // Coin is collected
-                    this.coinsCollected++; // Increment coins collected
-                    this.score += 100; // Increment score by 100
+                    coin.collected = true; // Mark coin as collected
+                    this.coinsCollected++; // Increment coins collected counter
+                    this.score += 100; // Increment score by 100 points
                     // If all coins have been collected
                     if (this.coinsCollected >= this.totalCoins) {
                         this.gameState = 'won'; // Set game state to 'won'
@@ -157,23 +168,23 @@ class Game {
     
     // Creating score saving function
     saveScoreToLeaderboard() {
-        // Checking if score has already been saved
+        // Checking if score has already been saved (prevent duplicate entries)
         if (this.scoreSaved) return;
-        // Getting the logged-in username and leaderboard from localStorage
+        // Getting the logged-in username from localStorage
         const username = localStorage.getItem('loggedInUser');
-        // Parsing the leaderboard from localStorage
+        // Parsing the leaderboard from localStorage (or initialise empty array)
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-        // Creating a new score entry
+        // Creating a new score entry object
         const scoreEntry = {
             username: username, // Current username
             score: this.score, // Current score
-            date: new Date().toISOString() // Current date
+            date: new Date().toISOString() // Current date in ISO format
         };
-        // Adding the new score to leaderboard
+        // Adding the new score to leaderboard array
         leaderboard.push(scoreEntry);
         // Saving updated leaderboard back to localStorage
         localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-        // Marking score as saved
+        // Marking score as saved to prevent duplicate saves
         this.scoreSaved = true;
     }
     
@@ -183,31 +194,32 @@ class Game {
         if (this.gameState !== 'playing') return;
         
         this.handleInput(); // Handle keyboard input
-        this.player.update(); // Update player
-        this.robot.update(this.player); // Update robot
+        this.player.update(); // Update player position and state
+        this.robot.update(this.player); // Update robot and check detection
         this.checkPlatformCollisions(); // Check platform collisions
         this.checkCoinCollection(); // Check coin collection
         
-        const now = Date.now(); // Get current time
-        const dt = (now - this.lastTime) / 1000; // Calculate delta time
+        const now = Date.now(); // Get current time in milliseconds
+        const dt = (now - this.lastTime) / 1000; // Calculate delta time in seconds
         this.gameTime += dt; // Update game time
         this.lastTime = now; // Update last time
         
-        // Update UI
-        this.scoreDisplay.textContent = this.score; // Update score
-        this.coinDisplay.textContent = `${this.coinsCollected}/${this.totalCoins}`; // Update coins
-        this.timerDisplay.textContent = Math.floor(this.gameTime); // Update timer
+        // Update UI elements
+        this.scoreDisplay.textContent = this.score; // Update score display
+        this.coinDisplay.textContent = `${this.coinsCollected}/${this.totalCoins}`; // Update coins display
+        this.timerDisplay.textContent = Math.floor(this.gameTime); // Update timer display (in seconds)
     }
     
     // Creating game rendering function
     render() {
         // Clear canvas and draw background
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear canvas
-        this.context.fillStyle = 'rgba(30, 35, 45, 1)'; // Set background color
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw background
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height); // Clear entire canvas
+        this.context.fillStyle = 'rgba(30, 35, 45, 1)'; // Set background colour (dark blue-grey)
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw background rectangle
         
-        this.platforms.forEach(p => p.draw(this.context)); // Draw platforms
-        this.coins.forEach(c => c.draw(this.context)); // Draw coins
+        // Draw all game entities
+        this.platforms.forEach(p => p.draw(this.context)); // Draw all platforms
+        this.coins.forEach(c => c.draw(this.context)); // Draw all coins
         this.robot.draw(this.context); // Draw robot
         this.player.draw(this.context); // Draw player
 
@@ -223,270 +235,70 @@ class Game {
     
     // Creating pause screen rendering function 
     drawPauseScreen() {
-        this.context.fillStyle = 'rgba(0,0,0,0.7)'; // Set background color
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw background
-        this.context.fillStyle = 'rgba(255, 255, 255, 1)'; // Set text color
-        this.context.font = '48px Arial'; // Set font
-        this.context.textAlign = 'center'; // Set text alignment
-        this.context.fillText('PAUSED', this.canvas.width / 2, this.canvas.height / 2); // Draw text
-        this.context.font = '24px Arial'; // Set font
-        this.context.fillText('Press P to Resume', this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw text
+        this.context.fillStyle = 'rgba(0,0,0,0.7)'; // Set semi-transparent black background
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw overlay
+        this.context.fillStyle = 'rgba(255, 255, 255, 1)'; // Set text colour (white)
+        this.context.font = '48px Arial'; // Set font size and family
+        this.context.textAlign = 'center'; // Centre align text
+        this.context.fillText('PAUSED', this.canvas.width / 2, this.canvas.height / 2); // Draw pause text
+        this.context.font = '24px Arial'; // Set smaller font for instruction
+        this.context.fillText('Press P to Resume', this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw instruction
     }
     
     // Creating game over screen rendering function
     drawGameOverScreen() {
-        this.context.fillStyle = 'rgba(0,0,0,0.8)'; // Set background color
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw background
-        this.context.fillStyle = 'rgba(255,100,100,1)'; // Set text color
-        this.context.font = '48px Arial'; // Set font
-        this.context.textAlign = 'center'; // Set text alignment
-        this.context.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2); // Draw text
-        this.context.fillStyle = '#fff'; // Set text color
-        this.context.font = '24px Arial'; // Set font
-        this.context.fillText(`Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw score
-        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 90); // Draw text
+        this.context.fillStyle = 'rgba(0,0,0,0.8)'; // Set semi-transparent black background
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw overlay
+        this.context.fillStyle = 'rgba(255,100,100,1)'; // Set text colour (red)
+        this.context.font = '48px Arial'; // Set font size and family
+        this.context.textAlign = 'center'; // Centre align text
+        this.context.fillText('GAME OVER', this.canvas.width / 2, this.canvas.height / 2); // Draw game over text
+        this.context.fillStyle = '#fff'; // Set text colour (white)
+        this.context.font = '24px Arial'; // Set smaller font
+        this.context.fillText(`Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw final score
+        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 90); // Draw restart instruction
     }
     
     // Creating win screen rendering function
     drawWinScreen() {
-        this.context.fillStyle = 'rgba(0,0,0,0.8)'; // Set background color
-        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw background
-        this.context.fillStyle = 'rgba(100,255,100,1)'; // Set text color
-        this.context.font = '48px Arial'; // Set font
-        this.context.textAlign = 'center'; // Set text alignment
-        this.context.fillText('YOU WIN!', this.canvas.width / 2, this.canvas.height / 2); // Draw text
-        this.context.fillStyle = '#fff'; // Set text color
-        this.context.font = '24px Arial'; // Set font
-        this.context.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw score
-        this.context.fillText(`Time: ${Math.floor(this.gameTime)}s`, this.canvas.width / 2, this.canvas.height / 2 + 85); // Draw time
-        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 120); // Draw text
+        this.context.fillStyle = 'rgba(0,0,0,0.8)'; // Set semi-transparent black background
+        this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw overlay
+        this.context.fillStyle = 'rgba(100,255,100,1)'; // Set text colour (green)
+        this.context.font = '48px Arial'; // Set font size and family
+        this.context.textAlign = 'center'; // Centre align text
+        this.context.fillText('YOU WIN!', this.canvas.width / 2, this.canvas.height / 2); // Draw win text
+        this.context.fillStyle = '#fff'; // Set text colour (white)
+        this.context.font = '24px Arial'; // Set smaller font
+        this.context.fillText(`Final Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw final score
+        this.context.fillText(`Time: ${Math.floor(this.gameTime)}s`, this.canvas.width / 2, this.canvas.height / 2 + 85); // Draw completion time
+        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 120); // Draw restart instruction
     }
     
     // Creating game restart function
     restartGame() {
-        this.player.x = 100; // Reset player x position
-        this.player.y = 400; // Reset player y position
+        this.player.x = 100; // Reset player x position to starting point
+        this.player.y = 400; // Reset player y position to starting point
         this.player.velocityX = 0; // Reset player horizontal velocity
         this.player.velocityY = 0; // Reset player vertical velocity
         this.player.isDetected = false; // Reset player detection to false
+        this.player.isDropping = false; // Reset player dropping flag to false
         this.gameState = 'playing'; // Set game state to playing
-        this.score = 0; // Reset score
-        this.coinsCollected = 0; // Reset coins collected
-        this.gameTime = 0; // Reset game time
-        this.lastTime = Date.now(); // Reset last time
-        this.scoreSaved = false; // Reset score saved to false
-        this.platforms = this.generatePlatforms(); // Generate platforms
-        this.coins = this.generateCoins(); // Generate coins
+        this.score = 0; // Reset score to zero
+        this.coinsCollected = 0; // Reset coins collected to zero
+        this.gameTime = 0; // Reset game time to zero
+        this.lastTime = Date.now(); // Reset last time to current time
+        this.scoreSaved = false; // Reset score saved flag to false
+        this.platforms = this.generatePlatforms(); // Generate new platforms
+        this.coins = this.generateCoins(); // Generate new coins
         this.robot.detectionAngle = -Math.PI / 2; // Reset robot detection angle
-        this.robot.direction = 1; // Reset robot direction
+        this.robot.direction = 1; // Reset robot direction to clockwise
     }
     
     // Creating game loop function
     gameLoop() {
-        this.update(); // Update game
-        this.render(); // Render game
-        requestAnimationFrame(() => this.gameLoop()); // Request next frame
-    }
-}
-
-// Player class
-class Player {
-    constructor(x, y, game) {
-        this.x = x; // Player x position
-        this.y = y; // Player y position
-        this.width = 30; // Player width
-        this.height = 40; // Player height
-        this.velocityX = 0; // Player horizontal velocity
-        this.velocityY = 0; // Player vertical velocity
-        this.speed = 5; // Player speed
-        this.jumpPower = -12; // Player jump power
-        this.gravity = 0.5; // Player gravity
-        this.isOnGround = false; // Player is on ground
-        this.isDetected = false; // Player is not detected
-        this.jumpCount = 0; // Player jump count
-        this.game = game; // Game instance
-    }
-
-    // Player update function
-    update() {
-        this.velocityY += this.gravity; // Apply gravity logic
-        this.x += this.velocityX; // Apply horizontal movement logic
-        this.y += this.velocityY; // Apply vertical movement logic
-        this.velocityX *= 0.85; // Apply friction logic
-        // Keep player inside bounds
-        if (this.x < 0) this.x = 0; // If left edge of player is greater than left edge of canvas
-        if (this.x + this.width > this.game.canvas.width)
-            this.x = this.game.canvas.width - this.width;
-        // If player falls below canvas, trigger game over
-        if (this.y > this.game.canvas.height)
-            this.game.gameState = 'gameOver'; // Set game state to game over
-        // If player touches the ground, reset jump count
-        if (this.isOnGround) {
-            this.jumpCount = 0; // Reset jump count
-        }
-        // Player is not on ground
-        this.isOnGround = false;
-    }
-
-    draw(context) {
-        // Draw player
-        context.fillStyle = this.isDetected
-            ? 'rgba(255, 100, 100, 0.9)' // Player is detected
-            : 'rgba(100, 200, 255, 0.9)'; // Player is not detected
-        context.fillRect(this.x, this.y, this.width, this.height); // Draw player
-        context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Set stroke color
-        context.lineWidth = 2; // Set stroke width
-        context.strokeRect(this.x, this.y, this.width, this.height); // Draw player outline
-    }
-
-    jump() {
-        // Allow jump only if jumpCount < 2
-        if (this.jumpCount < 2) {
-            this.velocityY = this.jumpPower; // Apply jump power
-            this.isOnGround = false; // Player is not on ground
-            this.jumpCount++; // Increment jump count
-        }
-    }
-}
-
-// Robot class
-class Robot {
-    // Creating Robot constructor function
-    constructor(x, y, game) {
-        this.x = x; // Robot x position
-        this.y = y; // Robot y position
-        this.radius = 25; // Robot radius
-        this.detectionAngle = 1.5 * Math.PI;  // Set initial detection angle as 270°
-        this.detectionSpeed = 0.01; // Set detection speed
-        this.detectionRange = 200; // Set detection range
-        this.detectionWidth = Math.PI / 1.5;  // Set detection beam width as 120°
-        this.direction = 1; // Set initial direction
-        this.game = game; // Game instance
-    }
-
-    update(player) {
-        // Reverse beam direction with angle clamping to avoid overflow
-        if (this.detectionAngle >= 2 * Math.PI) {
-            this.detectionAngle = 2 * Math.PI; // Set high clamp at 270°
-            this.direction = -1; // Reverse detection beam direction
-        }
-        if (this.detectionAngle <= Math.PI) {
-            this.detectionAngle = Math.PI; // Set low clamp at 180°
-            this.direction = 1; // Reverse detection beam direction
-        }
-        // Update detection angle
-        this.detectionAngle += this.detectionSpeed * this.direction;
-        this.checkDetection(player); // Check player detection
-    }
-
-    checkDetection(player) {
-        const px = player.x + player.width / 2; // Player x position
-        const py = player.y + player.height / 2; // Player y position
-        const dx = px - this.x; // Distance between player and robot
-        const dy = py - this.y; // Distance between player and robot
-        const distance = Math.sqrt(dx * dx + dy * dy); // Distance between player and robot
-        // Get the angle to the player and normalise it to 0–2π
-        let angleToPlayer = Math.atan2(dy, dx);
-        // If angle is negative, add 2π
-        if (angleToPlayer < 0) angleToPlayer += 2 * Math.PI;
-        // Normalise the robot's own detection angle
-        let detectionAngle = this.detectionAngle % (2 * Math.PI);
-        // If angle is negative, add 2π
-        if (detectionAngle < 0) detectionAngle += 2 * Math.PI;
-        // Calculate smallest angular difference
-        let angleDiff = Math.abs(angleToPlayer - detectionAngle);
-        // If angle difference is greater than 180°, subtract 2π
-        if (angleDiff > Math.PI) angleDiff = (2 * Math.PI) - angleDiff;
-
-        // Check detection range and angle
-        if (distance < this.detectionRange && angleDiff < this.detectionWidth / 2) {
-            player.isDetected = true; // Player is detected
-            this.game.gameState = 'gameOver'; // Set game state to "gameOver"
-        } else {
-            player.isDetected = false; // Player is not detected
-        }
-    }
-
-    draw(context) {
-        context.save(); // Save canvas state
-        context.translate(this.x, this.y); // Translate canvas to robot position
-        context.beginPath(); // Draw scanning beam
-        context.moveTo(0, 0); // Move to robot center
-        context.arc(
-            0, 0, this.detectionRange, // Draw beam arc
-            this.detectionAngle - this.detectionWidth / 2, // Start angle
-            this.detectionAngle + this.detectionWidth / 2 // End angle
-        );
-        context.closePath(); // Close path
-        // Get player instance
-        const player = this.game.player;
-        context.fillStyle = player.isDetected ? 'rgba(255, 0, 0, 0.2)' : 'rgba(255, 255, 0, 0.1)'; // Set beam color
-        context.fill(); // Fill beam
-        context.strokeStyle = player.isDetected ? 'rgba(255, 0, 0, 0.5)' : 'rgba(255, 255, 0, 0.3)'; // Set stroke color
-        context.lineWidth = 2; // Set stroke width
-        context.stroke(); // Stroke beam
-        context.restore(); // Restore canvas state
-        // Draw robot body
-        context.beginPath(); // Start path
-        context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Draw circle
-        context.fillStyle = 'rgba(200, 50, 50, 0.9)'; // Set fill color
-        context.fill(); // Fill circle
-        context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Set stroke color
-        context.lineWidth = 3; // Set stroke width
-        context.stroke(); // Stroke circle
-        // Draw the robot eye following the beam
-        const eyeX = this.x + Math.cos(this.detectionAngle) * 15; // Calculate eye x position
-        const eyeY = this.y + Math.sin(this.detectionAngle) * 15; // Calculate eye y position
-        context.beginPath(); // Start path
-        context.arc(eyeX, eyeY, 5, 0, Math.PI * 2); // Draw eye
-        context.fillStyle = player.isDetected ? 'rgba(255, 255, 0, 1)' : 'rgba(100, 100, 100, 0.8)'; // Set fill color
-        context.fill(); // Fill eye
-    }
-}
-
-// Creating Platform class
-class Platform {
-    // Creating Platform Constructor function
-    constructor(x, y, width, height) {
-        this.x = x; // Platform x position
-        this.y = y; // Platform y position
-        this.width = width; // Platform width
-        this.height = height; // Platform height
-    }
-    
-    draw(context) {
-        context.fillStyle = 'rgba(100, 100, 100, 0.8)'; // Set fill color
-        context.strokeStyle = 'rgba(200, 200, 200, 0.6)'; // Set stroke color
-        context.lineWidth = 2; // Set stroke width
-        context.fillRect(this.x, this.y, this.width, this.height); // Draw platform
-        context.strokeRect(this.x, this.y, this.width, this.height); // Stroke platform
-    }
-}
-
-// Creating Coin class
-class Coin {
-    // Creating Coin Constructor function
-    constructor(x, y, radius) {
-        this.x = x; // Coin x position
-        this.y = y; // Coin y position
-        this.radius = radius; // Coin radius
-        this.collected = false; // Coin is not collected
-    }
-    
-    draw(context) {
-        // If coin is not collected
-        if (!this.collected) {
-            context.beginPath(); // Start path
-            context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Draw coin
-            const gradient = context.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius); // Create gradient
-            gradient.addColorStop(0, 'rgba(255, 215, 0, 1)'); // Add color stops
-            gradient.addColorStop(1, 'rgba(255, 215, 0, 0.3)'); // Add color stops
-            context.fillStyle = gradient; // Set fill color
-            context.fill(); // Fill coin
-            context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Set stroke color
-            context.lineWidth = 2; // Set stroke width
-            context.stroke(); // Stroke coin
-        }
+        this.update(); // Update game logic
+        this.render(); // Render game graphics
+        requestAnimationFrame(() => this.gameLoop()); // Request next frame (creates continuous loop)
     }
 }
 

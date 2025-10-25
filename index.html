@@ -20,27 +20,71 @@
                     <a href="index.html" class="active">
                         <img src="assets/img/home.png" alt="Home" class="nav-icons">
                     </a>
-                    <a href="assets/html/game.html" class="active">
+                    <a href="assets/html/game.html">
                         <img src="assets/img/play.png" alt="Play" class="nav-icons">
                     </a>
-                    <a href="assets/html/leaderboard.html" class="active">
+                    <a href="assets/html/leaderboard.html">
                         <img src="assets/img/leaderboard.png" alt="Leaderboard" class="nav-icons">
                     </a>
-                    <a href="https://github.com/Syed-Nihaal/Robot-Steatlh-Game-CW1" class="nav-icons">
-                        <img src="assets/img/github.png" alt="GitHub" class="icons">
+                    <a href="https://github.com/Syed-Nihaal/Robot-Steatlh-Game-CW1">
+                        <img src="assets/img/github.png" alt="GitHub" class="nav-icons">
                     </a>
                 </div>
             </nav>
         </div>
 
-        <!-- divider line -->
+        <!-- Divider line -->
         <hr>
 
-        <!-- Buttons section -->
-        <div class="index-buttons">
+        <!-- Main content container with buttons and leaderboard -->
+        <div class="index-content">
+            <!-- Buttons section -->
+            <div class="index-buttons">
                 <a href="assets/html/login.html" class="button login-button">Login</a>
                 <a href="assets/html/register.html" class="button register-button">Register</a>
                 <a href="assets/html/game.html" class="button play-now">Play now</a>
+            </div>
+
+            <!-- Top 3 Leaderboard section -->
+            <div class="index-leaderboard">
+                <h2>🏆 Top Players</h2>
+                <div class="top-players-container">
+                    <!-- Top 3 players will be dynamically inserted here -->
+                    <div id="topPlayersContent">
+                        <!-- Loading message -->
+                        <p class="loading-message">Loading top players...</p>
+                    </div>
+                </div>
+                <!-- Link to full leaderboard -->
+                <a href="assets/html/leaderboard.html" class="view-full-leaderboard">View Full Leaderboard →</a>
+            </div>
         </div>
+
+        <!-- Divider line -->
+        <hr>
+
+        <!-- Game showcase section with screenshots/GIFs -->
+        <div class="game-showcase">
+            <h2>Game Preview</h2>
+            <div class="showcase-grid">
+                <!-- Gameplay 1 -->
+                <div class="showcase-item">
+                    <img src="assets/img/gameplay_1.png" alt="Gameplay 1" class="showcase-image">
+                </div>
+                
+                <!-- Gameplay 2 -->
+                <div class="showcase-item">
+                    <img src="assets/img/gameplay_2.gif" alt="Gameplay 2" class="showcase-image">
+                </div>
+                
+                <!-- Gameplay 3 -->
+                <div class="showcase-item">
+                    <img src="assets/img/gameplay_3.png" alt="Gameplay 3" class="showcase-image">
+                </div>
+            </div>
+        </div>
+
+        <!-- Link to index JavaScript file -->
+        <script src="assets/javascript/index.js"></script>
     </body>
 </html>

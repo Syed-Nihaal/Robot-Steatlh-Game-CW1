@@ -1,31 +1,84 @@
-// Create the login form by getting the HTML element ID
-const loginForm = document.getElementById('loginForm');
-// Create the message label by getting the HTML element ID
-const messageLabel = document.getElementById('messageLabel');
-
-// Add event listener to the login form
-loginForm.addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevent the form from submitting
-    const username = document.getElementById('username').value.trim(); // Get the username from the form input ID
-    const password = document.getElementById('password').value.trim(); // Get the password from the form input ID
-    // Check if the username is in localStorage users
-    let users = JSON.parse(localStorage.getItem('users')) || [];
-    // Check if the username and password are correct
-    const user = users.find(u => u.username === username && u.password === password);
-    // Clear previous messages
-    messageLabel.textContent = '';
-    // Show login status
-    messageLabel.style.color = 'red';
-
-    // Check if the username and password are correct
-    if (user) {
-        messageLabel.style.color = 'green';
-        messageLabel.textContent = 'Login successful! Redirecting...';
-        localStorage.setItem('loggedInUser', username);
-        setTimeout(() => {
-            window.location.href = 'game.html'; // Redirect to the game page
-        }, 1500);
-    } else {
-        messageLabel.textContent = 'Invalid username or password. Please try again.'; // Show error message
+// Login Manager class to handle user login functionality
+class LoginManager {
+    // Constructor to initialise the login manager
+    constructor() {
+        this.loginForm = document.getElementById('loginForm'); // Get login form element
+        this.messageLabel = document.getElementById('messageLabel'); // Get message label element
+        this.usersKey = 'users'; // LocalStorage key for users array
+        this.loggedInUserKey = 'loggedInUser'; // LocalStorage key for logged-in user
+        this.redirectDelay = 1500; // Delay before redirecting (in milliseconds)
+        
+        this.init(); // Initialise the login manager
     }
+
+    // Initialise event listeners
+    init() {
+        // Add submit event listener to login form
+        this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+    }
+
+    // Get all registered users from localStorage
+    getUsers() {
+        return JSON.parse(localStorage.getItem(this.usersKey)) || []; // Return users array or empty array
+    }
+
+    // Validate user credentials
+    validateCredentials(username, password) {
+        const users = this.getUsers(); // Get all users
+        // Find user with matching username and password
+        return users.find(u => u.username === username && u.password === password);
+    }
+
+    // Display message to user
+    displayMessage(message, isSuccess = false) {
+        this.messageLabel.textContent = message; // Set message text
+        this.messageLabel.style.color = isSuccess ? 'green' : 'red'; // Set colour based on success/failure
+    }
+
+    // Clear any existing messages
+    clearMessage() {
+        this.messageLabel.textContent = ''; // Clear message text
+    }
+
+    // Handle successful login
+    handleSuccessfulLogin(username) {
+        this.displayMessage('Login successful! Redirecting...', true); // Display success message
+        localStorage.setItem(this.loggedInUserKey, username); // Store logged-in user in localStorage
+        
+        // Redirect to game page after delay
+        setTimeout(() => {
+            window.location.href = 'game.html'; // Redirect to game page
+        }, this.redirectDelay);
+    }
+
+    // Handle failed login
+    handleFailedLogin() {
+        this.displayMessage('Invalid username or password. Please try again.'); // Display error message
+    }
+
+    // Handle login form submission
+    handleLogin(e) {
+        e.preventDefault(); // Prevent default form submission behaviour
+        
+        // Get form input values and trim whitespace
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        
+        this.clearMessage(); // Clear any previous messages
+        
+        // Validate credentials
+        const user = this.validateCredentials(username, password);
+        
+        // Handle login result
+        if (user) {
+            this.handleSuccessfulLogin(username); // Handle successful login
+        } else {
+            this.handleFailedLogin(); // Handle failed login
+        }
+    }
+}
+
+// Create instance of LoginManager when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    new LoginManager(); // Create new LoginManager instance
 });
