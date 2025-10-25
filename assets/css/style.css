@@ -1,8 +1,10 @@
+/* Reset default browser styles */
 body, h1, h2, p {
     margin: 0;
     padding: 0;
 }
 
+/* Global styles */
 body {
     font-family: Arial, sans-serif;
     background: rgba(20, 25, 35, 1);
@@ -10,6 +12,7 @@ body {
     min-height: 100vh;
 }
 
+/* Header styles */
 .header-container {
     padding: 1rem 2rem;
 }
@@ -35,6 +38,7 @@ body {
     font-weight: bold;
 }
 
+/* Navbar styles */
 .nav-icons {
     width: 35px;
     height: 35px;
@@ -65,17 +69,16 @@ body {
     text-align: center;
 }
 
-.button {
-    padding: 0.75rem 1.5rem;
+.logout-nav-button {
     text-decoration: none;
-    color: white;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-    background-color: rgb(0, 200, 200);
+    display: inline-flex;
+    margin: 0 10px;
 }
 
-.button:hover {
-    opacity: 0.9;
+.logout-nav-button:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
 }
 
 hr {
@@ -84,6 +87,7 @@ hr {
     border-top: 1px solid rgb(0, 200, 200);
 }
 
+/* Form styles */
 .form-container {
   max-width: 400px;
   margin: 3rem auto;
@@ -116,6 +120,20 @@ hr {
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Button styles */
+.button {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: white;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    background-color: rgb(0, 200, 200);
+}
+
+.button:hover {
+    opacity: 0.9;
+}
+
 .login-page .login-button {
   background-color: rgba(50, 205, 50, 0.9);
   width: 100%;
@@ -134,6 +152,7 @@ hr {
   text-align: center;
 }
 
+/* Alternative link styles */
 .alt-link {
   margin-top: 1rem;
   font-size: 0.9rem;
@@ -169,6 +188,7 @@ hr {
   text-decoration: underline;
 }
 
+/* Game styles */
 .game-container {
     display: flex;
     flex-direction: column;
