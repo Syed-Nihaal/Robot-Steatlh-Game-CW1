@@ -14,14 +14,14 @@ class Game {
         
         // Adding UI elements
         this.scoreDisplay = document.getElementById('scoreDisplay'); // Display score
-        this.coinDisplay = document.getElementById('coinDisplay'); // Display coins
+        this.coinDisplay = document.getElementById('coinDisplay'); // Display coins remaining
         this.timerDisplay = document.getElementById('timerDisplay'); // Display timer
         
         // Adding game state
         this.gameState = 'playing'; // Current game state ('playing', 'paused', 'gameOver', 'won')
         this.score = 0; // Player score
         this.coinsCollected = 0; // Number of coins collected
-        this.totalCoins = 5; // Total number of coins
+        this.totalCoins = 5; // Total number of coins at a time
         this.gameTime = 0; // Game time
         this.lastTime = Date.now(); // Last time game was updated
         this.scoreSaved = false; // Flag to track if score has been saved to leaderboard
@@ -32,6 +32,11 @@ class Game {
         this.platforms = this.generatePlatforms(); // Generate platforms
         this.coins = this.generateCoins(); // Generate coins
         
+        // Game level system
+        this.currentLevel = 1;
+        this.level2Threshold = 60;
+        this.level2Activated = false;
+
         // Input handling
         this.keys = {}; // Keyboard input
         this.setupEventListeners(); // Set up event listeners
@@ -69,6 +74,18 @@ class Game {
             newCoins.push(new Coin(x, y, 12)); // Create coin with radius 12
         }
         return newCoins;
+    }
+    
+    // Creating function to generate new coins after collection
+    generateNewCoins() {
+        // Count how many coins are currently uncollected
+        const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
+        
+        // Only generate new coins if all coins have been collected
+        if (uncollectedCoins === 0) {
+            const newCoins = this.generateCoins(this.totalCoins); // Generate 5 new coins
+            this.coins.push(...newCoins); // Add new coins to existing coins array
+        }
     }
     
     // Creating event listeners for instantaneous keyboard input function
@@ -156,11 +173,14 @@ class Game {
                     coin.collected = true; // Mark coin as collected
                     this.coinsCollected++; // Increment coins collected counter
                     this.score += 100; // Increment score by 100 points
-                    // If all coins have been collected
-                    if (this.coinsCollected >= this.totalCoins) {
-                        this.gameState = 'won'; // Set game state to 'won'
-                        this.saveScoreToLeaderboard(); // Save score when game is won
+                    
+                    // Save score every 10 coins collected
+                    if (this.coinsCollected % 10 === 0) {
+                        this.saveScoreToLeaderboard(); // Save score to leaderboard
                     }
+                    
+                    // Check if all 5 coins have been collected, then generate new set
+                    this.generateNewCoins();
                 }
             }
         });
@@ -168,24 +188,39 @@ class Game {
     
     // Creating score saving function
     saveScoreToLeaderboard() {
-        // Checking if score has already been saved (prevent duplicate entries)
-        if (this.scoreSaved) return;
         // Getting the logged-in username from localStorage
         const username = localStorage.getItem('loggedInUser');
         // Parsing the leaderboard from localStorage (or initialise empty array)
         let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-        // Creating a new score entry object
+        
+        // Creating a new score entry object with time taken
         const scoreEntry = {
             username: username, // Current username
             score: this.score, // Current score
+            time: Math.floor(this.gameTime), // Time taken in seconds
             date: new Date().toISOString() // Current date in ISO format
         };
-        // Adding the new score to leaderboard array
-        leaderboard.push(scoreEntry);
+        
+        // Check if user already exists in leaderboard
+        const existingUserIndex = leaderboard.findIndex(entry => entry.username === username);
+        
+        if (existingUserIndex !== -1) {
+            // User exists - check if new score is better
+            const existingEntry = leaderboard[existingUserIndex];
+            
+            // Replace if new score is higher OR if score is same but time is less
+            if (scoreEntry.score > existingEntry.score || 
+                (scoreEntry.score === existingEntry.score && scoreEntry.time < existingEntry.time)) {
+                leaderboard[existingUserIndex] = scoreEntry; // Replace old record
+            }
+            // If new score is not better, don't update
+        } else {
+            // User doesn't exist - add new entry
+            leaderboard.push(scoreEntry);
+        }
+        
         // Saving updated leaderboard back to localStorage
         localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-        // Marking score as saved to prevent duplicate saves
-        this.scoreSaved = true;
     }
     
     // Creating game update function
@@ -195,7 +230,7 @@ class Game {
         
         this.handleInput(); // Handle keyboard input
         this.player.update(); // Update player position and state
-        this.robot.update(this.player); // Update robot and check detection
+        this.robot.update(this.player, this.gameTime); // Update robot and check detection (pass game time)
         this.checkPlatformCollisions(); // Check platform collisions
         this.checkCoinCollection(); // Check coin collection
         
@@ -206,7 +241,9 @@ class Game {
         
         // Update UI elements
         this.scoreDisplay.textContent = this.score; // Update score display
-        this.coinDisplay.textContent = `${this.coinsCollected}/${this.totalCoins}`; // Update coins display
+        // Count uncollected coins for display (remaining coins to collect)
+        const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
+        this.coinDisplay.textContent = `${uncollectedCoins}/5`; // Update coins display (remaining/5)
         this.timerDisplay.textContent = Math.floor(this.gameTime); // Update timer display (in seconds)
     }
     
@@ -247,6 +284,12 @@ class Game {
     
     // Creating game over screen rendering function
     drawGameOverScreen() {
+        // Save score when game over screen is shown (only once per game over)
+        if (!this.scoreSaved) {
+            this.saveScoreToLeaderboard(); // Save score to leaderboard
+            this.scoreSaved = true; // Mark as saved to prevent duplicate saves
+        }
+        
         this.context.fillStyle = 'rgba(0,0,0,0.8)'; // Set semi-transparent black background
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height); // Draw overlay
         this.context.fillStyle = 'rgba(255,100,100,1)'; // Set text colour (red)
@@ -256,7 +299,8 @@ class Game {
         this.context.fillStyle = '#fff'; // Set text colour (white)
         this.context.font = '24px Arial'; // Set smaller font
         this.context.fillText(`Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw final score
-        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 90); // Draw restart instruction
+        this.context.fillText(`Time: ${Math.floor(this.gameTime)}s`, this.canvas.width / 2, this.canvas.height / 2 + 85); // Draw time taken
+        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 120); // Draw restart instruction
     }
     
     // Creating win screen rendering function
@@ -292,6 +336,7 @@ class Game {
         this.coins = this.generateCoins(); // Generate new coins
         this.robot.detectionAngle = -Math.PI / 2; // Reset robot detection angle
         this.robot.direction = 1; // Reset robot direction to clockwise
+        this.robot.detectionSpeed = this.robot.baseDetectionSpeed; // Reset robot detection speed to base speed
     }
     
     // Creating game loop function

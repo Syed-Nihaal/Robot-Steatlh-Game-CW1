@@ -6,15 +6,26 @@ export class Robot {
         this.y = y; // Robot y position
         this.radius = 25; // Robot radius
         this.detectionAngle = 1.5 * Math.PI;  // Set initial detection angle as 270°
-        this.detectionSpeed = 0.01; // Set detection speed
+        this.baseDetectionSpeed = 0.01; // Set base detection speed
+        this.detectionSpeed = 0.01; // Set current detection speed (will be updated based on time)
         this.detectionRange = 200; // Set detection range
         this.detectionWidth = Math.PI / 1.5;  // Set detection beam width as 120°
         this.direction = 1; // Set initial direction
         this.game = game; // Game instance
     }
 
+    // Calculate detection speed based on game time
+    calculateDetectionSpeed(gameTime) {
+        // Increase speed by 0.01 every 30 seconds
+        const speedIncrease = Math.floor(gameTime / 30) * 0.01;
+        return this.baseDetectionSpeed + speedIncrease;
+    }
+
     // Robot update function
-    update(player) {
+    update(player, gameTime) {
+        // Update detection speed based on game time
+        this.detectionSpeed = this.calculateDetectionSpeed(gameTime);
+        
         // Reverse beam direction with angle clamping to avoid overflow
         if (this.detectionAngle >= 2 * Math.PI) {
             this.detectionAngle = 2 * Math.PI; // Set high clamp at 360°

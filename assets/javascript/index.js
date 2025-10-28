@@ -24,15 +24,22 @@ class IndexPageManager {
         return JSON.parse(localStorage.getItem(this.leaderboardKey)) || []; // Return leaderboard array or empty array
     }
 
-    // Sort scores in descending order (highest score first)
+    // Sort scores by score (descending) then by time (ascending)
     sortScores(scores) {
-        return scores.sort((a, b) => b.score - a.score); // Sort by score in descending order
+        return scores.sort((a, b) => {
+            // First sort by score (highest first)
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            // If scores are equal, sort by time (lowest first)
+            return (a.time || Infinity) - (b.time || Infinity);
+        });
     }
 
     // Get top N players from leaderboard
     getTopPlayers(count = 3) {
         let scores = this.getLeaderboardData(); // Get all leaderboard data
-        scores = this.sortScores(scores); // Sort scores by highest first
+        scores = this.sortScores(scores); // Sort scores by highest first, then by lowest time
         return scores.slice(0, count); // Return only top N players
     }
 
@@ -44,6 +51,21 @@ class IndexPageManager {
             month: '2-digit', // Two-digit month
             year: 'numeric'   // Four-digit year
         });
+    }
+
+    // Format time in seconds to readable format
+    formatTime(seconds) {
+        if (seconds === undefined || seconds === null) {
+            return 'N/A'; // Return N/A if time is not available
+        }
+        
+        const mins = Math.floor(seconds / 60); // Calculate minutes
+        const secs = seconds % 60; // Calculate remaining seconds
+        
+        if (mins > 0) {
+            return `${mins}m ${secs}s`; // Return formatted time with minutes
+        }
+        return `${secs}s`; // Return formatted time in seconds only
     }
 
     // Create player card element
@@ -71,6 +93,15 @@ class IndexPageManager {
         playerScore.className = 'player-score';
         playerScore.textContent = `Score: ${player.score}`; // Display score
         
+        // Create player time element
+        const playerTime = document.createElement('div');
+        playerTime.className = 'player-time';
+        playerTime.textContent = `Time: ${this.formatTime(player.time)}`; // Display formatted time
+        playerTime.style.fontSize = '0.9rem';
+        playerTime.style.color = 'rgba(255, 165, 0, 1)';
+        playerTime.style.fontWeight = 'bold';
+        playerTime.style.marginTop = '0.2rem';
+        
         // Create player date element
         const playerDate = document.createElement('div');
         playerDate.className = 'player-date';
@@ -79,6 +110,7 @@ class IndexPageManager {
         // Assemble player info
         playerInfo.appendChild(playerName); // Add name to info
         playerInfo.appendChild(playerScore); // Add score to info
+        playerInfo.appendChild(playerTime); // Add time to info
         playerInfo.appendChild(playerDate); // Add date to info
         
         // Assemble player card

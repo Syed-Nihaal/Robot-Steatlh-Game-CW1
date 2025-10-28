@@ -23,9 +23,16 @@ class LeaderboardManager {
         return JSON.parse(localStorage.getItem(this.leaderboardKey)) || []; // Return leaderboard array or empty array
     }
 
-    // Sort scores in descending order (highest score first)
+    // Sort scores by score (descending) then by time (ascending)
     sortScores(scores) {
-        return scores.sort((a, b) => b.score - a.score); // Sort by score in descending order
+        return scores.sort((a, b) => {
+            // First sort by score (highest first)
+            if (b.score !== a.score) {
+                return b.score - a.score;
+            }
+            // If scores are equal, sort by time (lowest first)
+            return (a.time || Infinity) - (b.time || Infinity);
+        });
     }
 
     // Format date to DD/MM/YYYY format
@@ -38,10 +45,25 @@ class LeaderboardManager {
         });
     }
 
+    // Format time in seconds to readable format
+    formatTime(seconds) {
+        if (seconds === undefined || seconds === null) {
+            return 'N/A'; // Return N/A if time is not available
+        }
+        
+        const mins = Math.floor(seconds / 60); // Calculate minutes
+        const secs = seconds % 60; // Calculate remaining seconds
+        
+        if (mins > 0) {
+            return `${mins}m ${secs}s`; // Return formatted time with minutes
+        }
+        return `${secs}s`; // Return formatted time in seconds only
+    }
+
     // Create empty leaderboard message row
     createEmptyRow() {
         const row = document.createElement('tr'); // Create table row
-        row.innerHTML = '<td colspan="4" style="text-align: center; padding: 2rem;">No scores available</td>';
+        row.innerHTML = '<td colspan="5" style="text-align: center; padding: 2rem;">No scores available</td>';
         return row;
     }
 
@@ -49,12 +71,14 @@ class LeaderboardManager {
     createScoreRow(entry, index) {
         const row = document.createElement('tr'); // Create table row
         const formattedDate = this.formatDate(entry.date); // Format the date
+        const formattedTime = this.formatTime(entry.time); // Format the time
         
-        // Create table cells for rank, username, score, and date
+        // Create table cells for rank, username, score, time, and date
         row.innerHTML = `
             <td>${index + 1}</td>
             <td>${entry.username}</td>
             <td>${entry.score}</td>
+            <td>${formattedTime}</td>
             <td>${formattedDate}</td>
         `;
         
@@ -91,7 +115,7 @@ class LeaderboardManager {
         
         // Retrieve and sort scores from localStorage
         let scores = this.getLeaderboardData(); // Get leaderboard data
-        scores = this.sortScores(scores); // Sort scores by highest first
+        scores = this.sortScores(scores); // Sort scores by highest first, then by lowest time
         
         // Check if any scores exist
         if (scores.length === 0) {

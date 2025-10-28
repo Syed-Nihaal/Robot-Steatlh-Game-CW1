@@ -60,19 +60,34 @@ class RegistrationManager {
         return password.length >= 6; // Check if password is at least 6 characters
     }
 
-    // Validate date of birth (user must be at least 13 years old)
+    // Validate username (no spaces allowed)
+    validateUsername(username) {
+        const usernameRegex = /^\S+$/; // No whitespace characters allowed
+        return usernameRegex.test(username); // Test username against regex
+    }
+
+    // Validate date of birth - user must be at least 10 years old
     validateDateOfBirth(dob) {
-        const birthDate = new Date(dob); // Convert string to Date object
-        const today = new Date(); // Get current date
-        const age = today.getFullYear() - birthDate.getFullYear(); // Calculate age
-        const monthDiff = today.getMonth() - birthDate.getMonth(); // Calculate month difference
+        const birthDate = new Date(dob);
+        const today = new Date();
+        
+        // Check if date is valid
+        if (isNaN(birthDate.getTime())) return false;
+        
+        // Check if date is not in future
+        if (birthDate > today) return false;
+        
+        // Calculate age
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
         
         // Adjust age if birthday hasn't occurred this year yet
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-            return age - 1 >= 13; // Return true if user is at least 13 years old
+            age--;
         }
         
-        return age >= 13; // Return true if user is at least 13 years old
+        // Check if user is at least 10 years old
+        return age >= 10;
     }
 
     // Create new user object
@@ -108,6 +123,12 @@ class RegistrationManager {
         
         this.clearMessage(); // Clear any previous messages
 
+        // Validate username (no spaces allowed)
+        if (!this.validateUsername(username)) {
+            this.displayMessage('Username cannot contain any spaces.');
+            return;
+        }
+
         // Validate email format
         if (!this.validateEmail(email)) {
             this.displayMessage('Please enter a valid email address.');
@@ -120,9 +141,9 @@ class RegistrationManager {
             return;
         }
 
-        // Validate date of birth
+        // Validate date of birth - user must be at least 10 years old
         if (!this.validateDateOfBirth(dob)) {
-            this.displayMessage('You must be at least 13 years old to register.');
+            this.displayMessage('You must be at least 10 years old to register.');
             return;
         }
 

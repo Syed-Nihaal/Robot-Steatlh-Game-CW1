@@ -1,30 +1,32 @@
-// Authentication Manager class to handle user authentication
+// Creating Authentication Manager class to handle user authentication
 class AuthManager {
-    // Constructor to initialise the authentication manager
+    // Creating constructor to initialise the authentication manager
     constructor() {
         this.loggedInUserKey = 'loggedInUser'; // LocalStorage key for logged-in user
+        this.sessionUserKey = 'currentUser'; // SessionStorage key for current user session
         this.protectedPages = ['game.html', 'leaderboard.html']; // Pages that require authentication
     }
 
-    // Check if user is currently logged in
+    // Checking if user is currently logged in
     checkLoginStatus() {
-        return localStorage.getItem(this.loggedInUserKey) !== null;
+        return localStorage.getItem(this.loggedInUserKey) !== null && sessionStorage.getItem(this.sessionUserKey) !== null;
     }
 
-    // Get the username of the currently logged-in user
+    // Geting the username of the currently logged-in user from localStorage and sessionStorage
     getCurrentUser() {
-        return localStorage.getItem(this.loggedInUserKey);
+        return localStorage.getItem(this.loggedInUserKey) && sessionStorage.getItem(this.sessionUserKey);
     }
 
-    // Log out the current user and redirect to login page
+    // Logging out the current user and redirect to login page
     logout() {
         localStorage.removeItem(this.loggedInUserKey); // Remove logged-in user from localStorage
+        sessionStorage.removeItem(this.sessionUserKey); // Remove current user session from sessionStorage
         window.location.href = 'login.html'; // Redirect to login page
     }
 
-    // Update navigation bar based on login status
+    // Updating navigation bar based on login status
     updateNavigation() {
-        const user = this.getCurrentUser(); // Get current logged-in user
+        const user = this.getCurrentUser(); // Geting current logged-in user
         const navLinks = document.querySelector('.nav-links'); // Get navigation links container
         
         if (navLinks) {
