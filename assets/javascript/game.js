@@ -26,16 +26,18 @@ class Game {
         this.lastTime = Date.now(); // Last time game was updated
         this.scoreSaved = false; // Flag to track if score has been saved to leaderboard
         
+        // Game level system
+        this.currentLevel = 1; // Current level (starts at 1)
+        this.level2Threshold = 60; // Time in seconds to reach level 2 (1 minute)
+        this.level2Activated = false; // Flag to track if level 2 has been activated
+        this.levelUpMessageTime = 0; // Timer for displaying level up message
+        this.showLevelUpMessage = false; // Flag to show level up message
+        
         // Game objects
         this.player = new Player(100, 400, this); // Pass game reference
         this.robot = new Robot(this.canvas.width / 2, 525, this); // Pass game reference
         this.platforms = this.generatePlatforms(); // Generate platforms
         this.coins = this.generateCoins(); // Generate coins
-        
-        // Game level system
-        this.currentLevel = 1;
-        this.level2Threshold = 60;
-        this.level2Activated = false;
 
         // Input handling
         this.keys = {}; // Keyboard input
@@ -83,8 +85,44 @@ class Game {
         
         // Only generate new coins if all coins have been collected
         if (uncollectedCoins === 0) {
-            const newCoins = this.generateCoins(this.totalCoins); // Generate 5 new coins
+            const newCoins = this.generateCoins(this.totalCoins); // Generate coins based on current level
             this.coins.push(...newCoins); // Add new coins to existing coins array
+        }
+    }
+    
+    // Function to activate Level 2
+    activateLevel2() {
+        // Check if level 2 hasn't been activated yet and time threshold is reached
+        if (!this.level2Activated && this.gameTime >= this.level2Threshold) {
+            this.level2Activated = true; // Mark level 2 as activated
+            this.currentLevel = 2; // Set current level to 2
+            this.showLevelUpMessage = true; // Show level up message
+            this.levelUpMessageTime = 3; // Show message for 3 seconds
+            
+            // Increase game difficulty for Level 2
+            this.totalCoins = 7; // Increase total coins from 5 to 7
+            
+            // Add more platforms (3 additional platforms)
+            for (let i = 0; i < 3; i++) {
+                const width = 100 + Math.random() * 80; // Random width between 100-180
+                const height = 20; // Constant height
+                const x = Math.random() * (this.canvas.width - width); // Random x position
+                const y = 150 + Math.random() * 350; // Random y position between 150-500
+                this.platforms.push(new Platform(x, y, width, height)); // Add new platform
+            }
+            
+            // Increase robot detection speed multiplier
+            this.robot.level2SpeedMultiplier = 1.2; // Keep detection speed at 1.2x
+            
+            // Generate new coins with increased count
+            const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
+            if (uncollectedCoins === 0) {
+                const newCoins = this.generateCoins(this.totalCoins);
+                this.coins.push(...newCoins);
+            }
+            
+            // Add bonus score for reaching level 2
+            this.score += 500; // Bonus 500 points for reaching level 2
         }
     }
     
@@ -179,7 +217,7 @@ class Game {
                         this.saveScoreToLeaderboard(); // Save score to leaderboard
                     }
                     
-                    // Check if all 5 coins have been collected, then generate new set
+                    // Check if all coins have been collected, then generate new set
                     this.generateNewCoins();
                 }
             }
@@ -239,11 +277,22 @@ class Game {
         this.gameTime += dt; // Update game time
         this.lastTime = now; // Update last time
         
+        // Check and activate Level 2 if threshold is reached
+        this.activateLevel2();
+        
+        // Update level up message timer
+        if (this.showLevelUpMessage) {
+            this.levelUpMessageTime -= dt; // Decrease message timer
+            if (this.levelUpMessageTime <= 0) {
+                this.showLevelUpMessage = false; // Hide message when timer expires
+            }
+        }
+        
         // Update UI elements
         this.scoreDisplay.textContent = this.score; // Update score display
         // Count uncollected coins for display (remaining coins to collect)
         const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
-        this.coinDisplay.textContent = `${uncollectedCoins}/5`; // Update coins display (remaining/5)
+        this.coinDisplay.textContent = `${uncollectedCoins}/${this.totalCoins}`; // Update coins display with current level's total
         this.timerDisplay.textContent = Math.floor(this.gameTime); // Update timer display (in seconds)
     }
     
@@ -259,6 +308,17 @@ class Game {
         this.coins.forEach(c => c.draw(this.context)); // Draw all coins
         this.robot.draw(this.context); // Draw robot
         this.player.draw(this.context); // Draw player
+        
+        // Draw level indicator in top-right corner
+        this.context.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Set text colour (white)
+        this.context.font = 'bold 20px Arial'; // Set font
+        this.context.textAlign = 'right'; // Right align text
+        this.context.fillText(`Level ${this.currentLevel}`, this.canvas.width - 20, 30); // Draw level text
+        
+        // Draw level up message if active
+        if (this.showLevelUpMessage) {
+            this.drawLevelUpMessage();
+        }
 
         // Draw overlay screens based on game state
         if (this.gameState === 'paused') {
@@ -268,6 +328,24 @@ class Game {
         } else if (this.gameState === 'won') {
             this.drawWinScreen(); // Draw win screen
         }
+    }
+    
+    // Function to draw level up message
+    drawLevelUpMessage() {
+        // Draw semi-transparent background for message
+        this.context.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Semi-transparent black
+        this.context.fillRect(0, this.canvas.height / 2 - 60, this.canvas.width, 120); // Draw background rectangle
+        
+        // Draw level up text
+        this.context.fillStyle = 'rgba(0, 255, 200, 1)'; // Bright cyan colour
+        this.context.font = 'bold 48px Arial'; // Large bold font
+        this.context.textAlign = 'center'; // Centre align text
+        this.context.fillText('LEVEL 2!', this.canvas.width / 2, this.canvas.height / 2 - 10); // Draw main message
+        
+        // Draw bonus points text
+        this.context.fillStyle = 'rgba(255, 215, 0, 1)'; // Gold colour
+        this.context.font = 'bold 24px Arial'; // Smaller font
+        this.context.fillText('+500 BONUS POINTS', this.canvas.width / 2, this.canvas.height / 2 + 30); // Draw bonus text
     }
     
     // Creating pause screen rendering function 
@@ -300,7 +378,8 @@ class Game {
         this.context.font = '24px Arial'; // Set smaller font
         this.context.fillText(`Score: ${this.score}`, this.canvas.width / 2, this.canvas.height / 2 + 50); // Draw final score
         this.context.fillText(`Time: ${Math.floor(this.gameTime)}s`, this.canvas.width / 2, this.canvas.height / 2 + 85); // Draw time taken
-        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 120); // Draw restart instruction
+        this.context.fillText(`Level Reached: ${this.currentLevel}`, this.canvas.width / 2, this.canvas.height / 2 + 120); // Draw level reached
+        this.context.fillText('Press R to Restart', this.canvas.width / 2, this.canvas.height / 2 + 155); // Draw restart instruction
     }
     
     // Creating win screen rendering function
@@ -332,11 +411,16 @@ class Game {
         this.gameTime = 0; // Reset game time to zero
         this.lastTime = Date.now(); // Reset last time to current time
         this.scoreSaved = false; // Reset score saved flag to false
+        this.currentLevel = 1; // Reset to level 1
+        this.level2Activated = false; // Reset level 2 activation flag
+        this.totalCoins = 5; // Reset total coins to 5
+        this.showLevelUpMessage = false; // Hide level up message
         this.platforms = this.generatePlatforms(); // Generate new platforms
         this.coins = this.generateCoins(); // Generate new coins
         this.robot.detectionAngle = -Math.PI / 2; // Reset robot detection angle
         this.robot.direction = 1; // Reset robot direction to clockwise
         this.robot.detectionSpeed = this.robot.baseDetectionSpeed; // Reset robot detection speed to base speed
+        this.robot.level2SpeedMultiplier = 1; // Reset speed multiplier
     }
     
     // Creating game loop function

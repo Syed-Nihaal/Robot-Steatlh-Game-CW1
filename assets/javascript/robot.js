@@ -12,18 +12,21 @@ export class Robot {
         this.detectionWidth = Math.PI / 1.5;  // Set detection beam width as 120°
         this.direction = 1; // Set initial direction
         this.game = game; // Game instance
+        this.level2SpeedMultiplier = 1; // Speed multiplier for Level 2 (default 1x)
     }
 
-    // Calculate detection speed based on game time
+    // Calculate detection speed based on game time and level
     calculateDetectionSpeed(gameTime) {
         // Increase speed by 0.01 every 30 seconds
         const speedIncrease = Math.floor(gameTime / 30) * 0.01;
-        return this.baseDetectionSpeed + speedIncrease;
+        // Apply level 2 multiplier if activated
+        const baseSpeed = this.baseDetectionSpeed + speedIncrease;
+        return baseSpeed * this.level2SpeedMultiplier;
     }
 
     // Robot update function
     update(player, gameTime) {
-        // Update detection speed based on game time
+        // Update detection speed based on game time and current level
         this.detectionSpeed = this.calculateDetectionSpeed(gameTime);
         
         // Reverse beam direction with angle clamping to avoid overflow

@@ -6,6 +6,7 @@ class LoginManager {
         this.messageLabel = document.getElementById('messageLabel'); // Get message label element
         this.usersKey = 'users'; // LocalStorage key for users array
         this.loggedInUserKey = 'loggedInUser'; // LocalStorage key for logged-in user
+        this.sessionUserKey = 'currentUser'; // SessionStorage key for current user session
         this.redirectDelay = 1500; // Delay before redirecting (in milliseconds)
         
         this.init(); // Initialise the login manager
@@ -43,7 +44,10 @@ class LoginManager {
     // Handle successful login
     handleSuccessfulLogin(username) {
         this.displayMessage('Login successful! Redirecting...', true); // Display success message
-        localStorage.setItem(this.loggedInUserKey, username); // Store logged-in user in localStorage
+        
+        // Store logged-in user in both localStorage and sessionStorage
+        localStorage.setItem(this.loggedInUserKey, username); // Store in localStorage for persistence
+        sessionStorage.setItem(this.sessionUserKey, username); // Store in sessionStorage for current session
         
         // Redirect to game page after delay
         setTimeout(() => {
