@@ -16,33 +16,30 @@ export class Player {
         this.jumpCount = 0; // Player jump count
         this.isDropping = false; // Player is dropping through platform
         this.game = game; // Game instance
+
         
-        // Sprite animation properties
-        this.spriteSheet = new Image(); // Sprite sheet image
-        this.spriteSheet.src = '../img/PathfinderSpriteSheet_4x.png'; // Path to sprite sheet
-        this.spriteLoaded = false; // Flag to check if sprite is loaded
-        
-        // Load sprite sheet
-        this.spriteSheet.onload = () => {
-            this.spriteLoaded = true; // Mark sprite as loaded
-        };
-        
-        // Sprite frame dimensions (based on the spritesheet layout)
-        this.frameWidth = 64; // Width of each sprite frame
-        this.frameHeight = 64; // Height of each sprite frame
-        
+
         // Animation states and frame data
         this.animations = {
-            idle: { row: 0, frames: 3, speed: 8 }, // IDLE animation: row 0, 3 frames
-            walk: { row: 1, frames: 4, speed: 6 }, // WALK animation: row 1, 4 frames
-            jump: { row: 3, frames: 9, speed: 4 }   // JUMP/FLOAT animation: row 3, 9 frames
+            idle: this.mapSprite(['../img/drone_idle_anim/drone_idle1.png'
+                                ,'../img/drone_idle_anim/drone_idle2.png'
+                                ,'../img/drone_idle_anim/drone_idle3.png'
+                                ,'../img/drone_idle_anim/drone_idle4.png']), // Idle animation
+            walkR: this.mapSprite(['../img/drone_walkR_anim/drone_walkR1.png',
+                                '../img/drone_walkR_anim/drone_walkR2.png',
+                                '../img/drone_walkR_anim/drone_walkR3.png',
+                                '../img/drone_walkR_anim/drone_walkR4.png']), // Walk right animation
+            walkL: this.mapSprite(['../img/drone_walkL_anim/drone_walkRL1.png',
+                                '../img/drone_walkL_anim/drone_walkL2.png',
+                                '../img/drone_walkL_anim/drone_walkL3.png',
+                                '../img/drone_walkL_anim/drone_walkL4.png'])   // Walk left animation
         };
         
         // Current animation state
         this.currentAnimation = 'idle'; // Default animation state
         this.currentFrame = 0; // Current frame index
         this.frameCounter = 0; // Counter for frame updates
-        this.facingRight = true; // Direction player is facing
+        this.animationSpeed = 100; // Animation speed
     }
 
     // Player update function
@@ -72,30 +69,30 @@ export class Player {
         // Update animation state based on player movement
         this.updateAnimation();
     }
+
+    mapSprite(imgsArray) {
+    return imgsArray.map(src => {
+        const img = new Image();
+        img.src = src;
+        return img;
+    }
+    );
+    }
     
     // Update animation state based on player movement
     updateAnimation() {
         // Determine which animation to play
-        if (!this.isOnGround) {
-            this.currentAnimation = 'jump'; // Play jump animation when in air
-        } else if (Math.abs(this.velocityX) > 0.5) {
-            this.currentAnimation = 'walk'; // Play walk animation when moving
+        if (Math.abs(this.velocityX) !== 0) {
+            this.currentAnimation = (this.velocityX > 0 ) ? 'walkR' : 'walkL'; // Determine which direction to play
         } else {
             this.currentAnimation = 'idle'; // Play idle animation when stationary
-        }
-        
-        // Update facing direction based on velocity
-        if (this.velocityX > 0.5) {
-            this.facingRight = true; // Facing right
-        } else if (this.velocityX < -0.5) {
-            this.facingRight = false; // Facing left
         }
         
         // Update frame counter and advance frames
         const anim = this.animations[this.currentAnimation];
         this.frameCounter++;
         
-        if (this.frameCounter >= anim.speed) {
+        if (this.frameCounter >= this.animationSpeed) {
             this.frameCounter = 0;
             this.currentFrame = (this.currentFrame + 1) % anim.frames; // Loop through frames
         }
