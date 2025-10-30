@@ -4,8 +4,8 @@ export class Player {
     constructor(x, y, game) {
         this.x = x; // Player x position
         this.y = y; // Player y position
-        this.width = 30; // Player width
-        this.height = 40; // Player height
+        this.width = 50; // Player width (increased from 30)
+        this.height = 60; // Player height (increased from 40)
         this.velocityX = 0; // Player horizontal velocity
         this.velocityY = 0; // Player vertical velocity
         this.speed = 5; // Player speed
@@ -16,30 +16,99 @@ export class Player {
         this.jumpCount = 0; // Player jump count
         this.isDropping = false; // Player is dropping through platform
         this.game = game; // Game instance
+        this.facingRight = true; // Track which direction player is facing
 
-        
-
-        // Animation states and frame data
+        // Animation states with sprite image paths
         this.animations = {
-            idle: this.mapSprite(['../img/drone_idle_anim/drone_idle1.png'
-                                ,'../img/drone_idle_anim/drone_idle2.png'
-                                ,'../img/drone_idle_anim/drone_idle3.png'
-                                ,'../img/drone_idle_anim/drone_idle4.png']), // Idle animation
-            walkR: this.mapSprite(['../img/drone_walkR_anim/drone_walkR1.png',
-                                '../img/drone_walkR_anim/drone_walkR2.png',
-                                '../img/drone_walkR_anim/drone_walkR3.png',
-                                '../img/drone_walkR_anim/drone_walkR4.png']), // Walk right animation
-            walkL: this.mapSprite(['../img/drone_walkL_anim/drone_walkRL1.png',
-                                '../img/drone_walkL_anim/drone_walkL2.png',
-                                '../img/drone_walkL_anim/drone_walkL3.png',
-                                '../img/drone_walkL_anim/drone_walkL4.png'])   // Walk left animation
+            idle: {
+                frames: this.loadSprites([
+                    '../img/drone_idle_anim/drone_idle1.png',
+                    '../img/drone_idle_anim/drone_idle2.png',
+                    '../img/drone_idle_anim/drone_idle3.png',
+                    '../img/drone_idle_anim/drone_idle4.png'
+                ]),
+                loaded: false
+            },
+            walkR: {
+                frames: this.loadSprites([
+                    '../img/drone_walkR_anim/drone_walkR1.png',
+                    '../img/drone_walkR_anim/drone_walkR2.png',
+                    '../img/drone_walkR_anim/drone_walkR3.png',
+                    '../img/drone_walkR_anim/drone_walkR4.png'
+                ]),
+                loaded: false
+            },
+            walkL: {
+                frames: this.loadSprites([
+                    '../img/drone_walkL_anim/drone_walkL1.png',
+                    '../img/drone_walkL_anim/drone_walkL2.png',
+                    '../img/drone_walkL_anim/drone_walkL3.png',
+                    '../img/drone_walkL_anim/drone_walkL4.png'
+                ]),
+                loaded: false
+            }
         };
         
         // Current animation state
         this.currentAnimation = 'idle'; // Default animation state
         this.currentFrame = 0; // Current frame index
         this.frameCounter = 0; // Counter for frame updates
-        this.animationSpeed = 100; // Animation speed
+        this.frameDelay = 8; // Number of game loops before advancing frame (controls animation speed)
+        this.spritesLoaded = false; // Track if all sprites are loaded
+        
+        // Check when sprites are loaded
+        this.checkSpritesLoaded();
+    }
+
+    // Load sprite images from file paths with error handling
+    loadSprites(imagePaths) {
+        return imagePaths.map((src, index) => {
+            const img = new Image();
+            
+            // Add error handler to prevent crashes
+            img.onerror = () => {
+                console.warn(`Failed to load sprite: ${src}`);
+            };
+            
+            // Add load handler to track loading status
+            img.onload = () => {
+                // Image loaded successfully
+            };
+            
+            img.src = src;
+            return img;
+        });
+    }
+
+    // Check if all sprites have finished loading
+    checkSpritesLoaded() {
+        let allLoaded = true;
+        
+        // Check all animation frames
+        for (const animName in this.animations) {
+            const anim = this.animations[animName];
+            const frames = anim.frames;
+            let animLoaded = true;
+            
+            for (const img of frames) {
+                // Check if image is loaded or failed to load
+                if (!img.complete) {
+                    animLoaded = false;
+                    allLoaded = false;
+                    break;
+                }
+            }
+            
+            // Mark this animation as loaded
+            anim.loaded = animLoaded;
+        }
+        
+        this.spritesLoaded = allLoaded;
+        
+        // If not all loaded, check again in 100ms
+        if (!allLoaded) {
+            setTimeout(() => this.checkSpritesLoaded(), 100);
+        }
     }
 
     // Player update function
@@ -49,105 +118,125 @@ export class Player {
         this.y += this.velocityY; // Apply vertical movement logic
         this.velocityX *= 0.85; // Apply friction logic
         
+        // Update facing direction based on velocity
+        if (this.velocityX > 0) {
+            this.facingRight = true;
+        } else if (this.velocityX < 0) {
+            this.facingRight = false;
+        }
+        
         // Keep player inside bounds
-        if (this.x < 0) this.x = 0; // If left edge of player is greater than left edge of canvas
+        if (this.x < 0) this.x = 0;
         if (this.x + this.width > this.game.canvas.width)
             this.x = this.game.canvas.width - this.width;
         
         // If player falls below canvas, trigger game over
         if (this.y > this.game.canvas.height)
-            this.game.gameState = 'gameOver'; // Set game state to game over
+            this.game.gameState = 'gameOver';
         
         // If player touches the ground, reset jump count
         if (this.isOnGround) {
-            this.jumpCount = 0; // Reset jump count
+            this.jumpCount = 0;
         }
         
-        // Player is not on ground
+        // Player is not on ground by default (will be set to true by collision detection)
         this.isOnGround = false;
         
         // Update animation state based on player movement
         this.updateAnimation();
     }
-
-    mapSprite(imgsArray) {
-    return imgsArray.map(src => {
-        const img = new Image();
-        img.src = src;
-        return img;
-    }
-    );
-    }
     
     // Update animation state based on player movement
     updateAnimation() {
-        // Determine which animation to play
-        if (Math.abs(this.velocityX) !== 0) {
-            this.currentAnimation = (this.velocityX > 0 ) ? 'walkR' : 'walkL'; // Determine which direction to play
+        // Determine which animation to play based on movement
+        if (Math.abs(this.velocityX) > 0.1) {
+            // Player is moving - use walk animation
+            // Use walkR for right movement, walkL for left movement
+            this.currentAnimation = this.facingRight ? 'walkR' : 'walkL';
         } else {
-            this.currentAnimation = 'idle'; // Play idle animation when stationary
+            // Player is stationary - use idle animation
+            this.currentAnimation = 'idle';
         }
         
-        // Update frame counter and advance frames
+        // Get current animation data
         const anim = this.animations[this.currentAnimation];
+        
+        // Safety check: ensure animation exists and has frames
+        if (!anim || !anim.frames || anim.frames.length === 0) {
+            console.warn(`Animation ${this.currentAnimation} not found or has no frames`);
+            this.currentAnimation = 'idle'; // Fallback to idle
+            return;
+        }
+        
+        // Update frame counter
         this.frameCounter++;
         
-        if (this.frameCounter >= this.animationSpeed) {
-            this.frameCounter = 0;
-            this.currentFrame = (this.currentFrame + 1) % anim.frames; // Loop through frames
+        // Advance to next frame when counter reaches delay threshold
+        if (this.frameCounter >= this.frameDelay) {
+            this.frameCounter = 0; // Reset counter
+            this.currentFrame = (this.currentFrame + 1) % anim.frames.length; // Loop through frames
         }
     }
 
     // Player draw function
     draw(context) {
-        // If sprite is loaded, draw sprite animation
-        if (this.spriteLoaded) {
-            const anim = this.animations[this.currentAnimation];
-            
-            // Calculate source coordinates on sprite sheet
-            const srcX = this.currentFrame * this.frameWidth;
-            const srcY = anim.row * this.frameHeight;
-            
-            // Save context state for transformations
-            context.save();
-            
-            // Apply red tint if player is detected
-            if (this.isDetected) {
-                context.globalAlpha = 0.7; // Make slightly transparent
-                context.fillStyle = 'rgba(255, 100, 100, 0.3)';
-                context.fillRect(this.x, this.y, this.width, this.height);
-                context.globalAlpha = 1.0; // Reset alpha
+        // Get current animation data
+        const anim = this.animations[this.currentAnimation];
+        
+        // Check if sprites are loaded and animation is valid
+        if (anim && anim.loaded && anim.frames && anim.frames.length > 0) {
+            // Ensure current frame is within bounds
+            if (this.currentFrame >= anim.frames.length) {
+                this.currentFrame = 0;
             }
             
-            // Flip sprite horizontally if facing left
-            if (!this.facingRight) {
-                context.translate(this.x + this.width, this.y);
-                context.scale(-1, 1);
-                context.drawImage(
-                    this.spriteSheet,
-                    srcX, srcY, this.frameWidth, this.frameHeight, // Source rectangle
-                    0, 0, this.width, this.height // Destination rectangle
-                );
-            } else {
-                context.drawImage(
-                    this.spriteSheet,
-                    srcX, srcY, this.frameWidth, this.frameHeight, // Source rectangle
-                    this.x, this.y, this.width, this.height // Destination rectangle
-                );
-            }
+            const currentImg = anim.frames[this.currentFrame];
             
-            // Restore context state
-            context.restore();
-        } else {
-            // Fallback: Draw player with different colours based on detection status (original code)
-            context.fillStyle = this.isDetected
-                ? 'rgba(255, 100, 100, 0.9)' // Player is detected (red)
-                : 'rgba(100, 200, 255, 0.9)'; // Player is not detected (blue)
-            context.fillRect(this.x, this.y, this.width, this.height); // Draw player rectangle
-            context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Set stroke colour
-            context.lineWidth = 2; // Set stroke width
-            context.strokeRect(this.x, this.y, this.width, this.height); // Draw player outline
+            // Only draw if the current frame image is loaded and valid
+            if (currentImg && currentImg.complete && currentImg.naturalWidth > 0) {
+                // Save context state for transformations
+                context.save();
+                
+                // Apply red overlay if player is detected
+                if (this.isDetected) {
+                    context.globalAlpha = 0.7; // Make slightly transparent
+                    context.fillStyle = 'rgba(255, 100, 100, 0.3)';
+                    context.fillRect(this.x, this.y, this.width, this.height);
+                    context.globalAlpha = 1.0; // Reset alpha
+                }
+                
+                // Draw the sprite image
+                try {
+                    context.drawImage(
+                        currentImg,
+                        this.x, this.y, // Destination position
+                        this.width, this.height // Destination size
+                    );
+                } catch (error) {
+                    // If drawing fails, fall back to rectangle
+                    console.warn('Error drawing sprite:', error);
+                    this.drawFallbackRectangle(context);
+                }
+                
+                // Restore context state
+                context.restore();
+                return; // Exit early since we drew the sprite
+            }
         }
+        
+        // Fallback: Draw simple coloured rectangle if sprites aren't loaded
+        this.drawFallbackRectangle(context);
+    }
+
+    // Draw fallback rectangle when sprites fail to load
+    drawFallbackRectangle(context) {
+        context.fillStyle = this.isDetected
+            ? 'rgba(255, 100, 100, 0.9)' // Player is detected (red)
+            : 'rgba(100, 200, 255, 0.9)'; // Player is not detected (blue)
+        context.fillRect(this.x, this.y, this.width, this.height); // Draw player rectangle
+        context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Set stroke colour
+        context.lineWidth = 2; // Set stroke width
+        context.strokeRect(this.x, this.y, this.width, this.height); // Draw player outline
     }
 
     // Player jump function

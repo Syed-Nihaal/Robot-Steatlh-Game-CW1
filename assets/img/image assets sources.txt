@@ -1,7 +1,8 @@
-home.png 	-	https://icons8.com/icon/iYcOAebNCEeX/exterior
-play.png 	- 	https://icons8.com/icon/xtnAmIPFgo5c/controller
-ledearboard.png - 	https://icons8.com/icon/mmy8jcEFY4uv/leaderboard
-gitHub.png	- 	https://icons8.com/icon/FVTvJkWPqGJ3/github
-logout.png 	-	https://icons8.com/icon/yYVvZRRwNT5v/logout
-logo.png 	-	Dall-E Generated image
-game_bg.png	-	Created on MS Paint
+home.png 	            -	https://icons8.com/icon/iYcOAebNCEeX/exterior
+play.png 	            - 	https://icons8.com/icon/xtnAmIPFgo5c/controller
+ledearboard.png         - 	https://icons8.com/icon/mmy8jcEFY4uv/leaderboard
+gitHub.png	            - 	https://icons8.com/icon/FVTvJkWPqGJ3/github
+logout.png 	            -	https://icons8.com/icon/yYVvZRRwNT5v/logout
+logo.png 	            -	Dall-E Generated image
+game_bg.png	            -	Created on MS Paint
+Drone animation assets  -   https://craftpix.net/freebies/free-drones-pack-pixel-art/?srsltid=AfmBOorCv5U5NYFSyOzwNn08461SQbObJhwnRcmQkOmxFHVXpbX7D1FH

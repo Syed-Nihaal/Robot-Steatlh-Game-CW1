@@ -70,7 +70,11 @@ class Game {
         const newCoins = [];
         // Creating random coins logic
         for (let i = 0; i < numCoins; i++) {
-            const p = this.platforms[Math.floor(Math.random() * (this.platforms.length - 1)) + 1]; // Random platform (excluding ground)
+            // Select a random platform (excluding ground platform at index 0)
+            const platformIndex = Math.floor(Math.random() * (this.platforms.length - 1)) + 1;
+            const p = this.platforms[platformIndex];
+            
+            // Generate coin position on platform
             const x = p.x + Math.random() * (p.width - 20) + 10; // Random x position on platform
             const y = p.y - 15; // Position above platform
             newCoins.push(new Coin(x, y, 12)); // Create coin with radius 12
@@ -86,7 +90,8 @@ class Game {
         // Only generate new coins if all coins have been collected
         if (uncollectedCoins === 0) {
             const newCoins = this.generateCoins(this.totalCoins); // Generate coins based on current level
-            this.coins.push(...newCoins); // Add new coins to existing coins array
+            // Replace the coins array instead of pushing (prevents array from growing indefinitely)
+            this.coins = newCoins;
         }
     }
     
@@ -117,8 +122,7 @@ class Game {
             // Generate new coins with increased count
             const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
             if (uncollectedCoins === 0) {
-                const newCoins = this.generateCoins(this.totalCoins);
-                this.coins.push(...newCoins);
+                this.coins = this.generateCoins(this.totalCoins);
             }
             
             // Add bonus score for reaching level 2
@@ -199,13 +203,17 @@ class Game {
     checkCoinCollection() {
         const px = this.player.x + this.player.width / 2; // Player centre x position
         const py = this.player.y + this.player.height / 2; // Player centre y position
-        // Adding coin collection logic
-        this.coins.forEach(coin => {
+        
+        // Adding coin collection logic - iterate through existing coins only
+        for (let i = 0; i < this.coins.length; i++) {
+            const coin = this.coins[i];
+            
             // If coin is not collected
             if (!coin.collected) {
                 const dx = px - coin.x; // Horizontal distance between player and coin
                 const dy = py - coin.y; // Vertical distance between player and coin
                 const dist = Math.sqrt(dx * dx + dy * dy); // Calculate Euclidean distance
+                
                 // If player is within the radius of the coin (collision detection)
                 if (dist < this.player.width / 2 + coin.radius) {
                     coin.collected = true; // Mark coin as collected
@@ -216,12 +224,12 @@ class Game {
                     if (this.coinsCollected % 10 === 0) {
                         this.saveScoreToLeaderboard(); // Save score to leaderboard
                     }
-                    
-                    // Check if all coins have been collected, then generate new set
-                    this.generateNewCoins();
                 }
             }
-        });
+        }
+        
+        // Check if all coins have been collected after the loop, then generate new set
+        this.generateNewCoins();
     }
     
     // Creating score saving function
