@@ -1,4 +1,4 @@
-// Creating Authentication Manager class to handle user authentication
+// Creating Authentication Manager class
 class AuthManager {
     // Creating constructor to initialise the authentication manager
     constructor() {
@@ -27,65 +27,64 @@ class AuthManager {
     // Updating navigation bar based on login status
     updateNavigation() {
         const user = this.getCurrentUser(); // Geting current logged-in user
-        const navLinks = document.querySelector('.nav-links'); // Get navigation links container
+        const navLinks = document.querySelector('.nav-links'); // Geting navigation links container
         
         if (navLinks) {
-            // Remove existing logout button if any
+            // Removing existing logout button if any
             const existingLogout = navLinks.querySelector('.logout-nav-button');
             if (existingLogout) {
-                existingLogout.remove(); // Remove old logout button
+                existingLogout.remove(); // Removing old logout button
             }
             
-            // Remove existing user info if any
+            // Removing existing user info if any
             const existingUserInfo = navLinks.querySelector('.user-info');
             if (existingUserInfo) {
-                existingUserInfo.remove(); // Remove old user info
+                existingUserInfo.remove(); // Removing old user info
             }
             
-            // Add logout button to navbar if user is logged in
+            // Adding logout button to navbar if user is logged in
             if (user) {
-                // Create logout button element for navbar
+                // Creating logout button element for navbar
                 const logoutButton = document.createElement('a');
-                logoutButton.href = '#'; // Set href to prevent page navigation
-                logoutButton.className = 'logout-nav-button'; // Set CSS class
+                logoutButton.href = '#'; // Setting href to prevent page navigation
+                logoutButton.className = 'logout-nav-button'; // Setting CSS class
                 logoutButton.innerHTML = `
                     <img src="../img/logout.png" alt="Logout" class="nav-icons">
-                `; // Set logout icon
+                `; // Setting logout icon
                 
-                // Add click event listener for logout functionality
+                // Adding click event listener for logout functionality
                 logoutButton.onclick = (e) => {
-                    e.preventDefault(); // Prevent default anchor behaviour
-                    this.logout(); // Call logout method
+                    e.preventDefault(); // Preventing default anchor behaviour
+                    this.logout(); // Calling logout method
                 };
                 
-                // Add title attribute for hover tooltip showing username
+                // Adding title attribute for hover tooltip showing username
                 logoutButton.title = `Logout (${user})`;
                 
-                // Append logout button to navigation
+                // Appending logout button to navigation
                 navLinks.appendChild(logoutButton);
             }
         }
     }
 
-    // Check if current page requires authentication and redirect if not logged in
+    // Checking if current page requires authentication and redirect if not logged in
     protectPage() {
-        const currentPage = window.location.pathname.split('/').pop(); // Get current page filename
-        
+        const currentPage = window.location.pathname.split('/').pop(); // Getting current page filename
         // If current page is protected and user is not logged in
         if (this.protectedPages.includes(currentPage) && !this.checkLoginStatus()) {
-            window.location.href = 'login.html'; // Redirect to login page
+            window.location.href = 'login.html'; // Redirecting to login page
         }
     }
 
-    // Initialise authentication manager
+    // Initialising authentication manager
     init() {
-        this.updateNavigation(); // Update navigation based on login status
-        this.protectPage(); // Protect page if necessary
+        this.updateNavigation(); // Updating navigation based on login status
+        this.protectPage(); // Protecting page if necessary
     }
 }
 
-// Create instance of AuthManager and initialise when DOM is loaded
+// Creating instance of AuthManager and initialise when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    const authManager = new AuthManager(); // Create new AuthManager instance
-    authManager.init(); // Initialise authentication manager
+    const authManager = new AuthManager(); // Creating new AuthManager instance
+    authManager.init(); // Initialising authentication manager
 });

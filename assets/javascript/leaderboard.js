@@ -1,4 +1,4 @@
-// Leaderboard Manager class to handle leaderboard display functionality
+// Creating Leaderboard Manager class
 class LeaderboardManager {
     // Constructor to initialise the leaderboard manager
     constructor() {

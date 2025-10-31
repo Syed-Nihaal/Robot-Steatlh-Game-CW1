@@ -1,4 +1,4 @@
-// Login Manager class to handle user login functionality
+// Creating Login Manager class
 class LoginManager {
     // Constructor to initialise the login manager
     constructor() {

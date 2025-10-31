@@ -1,4 +1,4 @@
-// Index Page Manager class to handle homepage functionality
+// Creating Index Page Manager class
 class IndexPageManager {
     // Constructor to initialise the index page manager
     constructor() {

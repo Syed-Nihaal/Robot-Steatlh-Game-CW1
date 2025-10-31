@@ -239,7 +239,7 @@ export class Player {
         context.strokeRect(this.x, this.y, this.width, this.height); // Draw player outline
     }
 
-    // Player jump function
+    // Creating Player jump function
     jump() {
         // Allow jump only if jumpCount < 2 (enables double jump)
         if (this.jumpCount < 2) {
@@ -249,7 +249,7 @@ export class Player {
         }
     }
 
-    // Player drop down function (allows passing through platforms)
+    // Creating Player drop down function 
     dropDown() {
         // Only allow drop down if player is on ground (standing on a platform)
         if (this.isOnGround) {

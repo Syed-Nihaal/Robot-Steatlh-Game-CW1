@@ -1,4 +1,4 @@
-// Import all game entity modules
+// Importing all game entity modules
 import { Player } from './player.js';
 import { Robot } from './robot.js';
 import { Platform } from './platform.js';
@@ -26,24 +26,24 @@ class Game {
         this.lastTime = Date.now(); // Last time game was updated
         this.scoreSaved = false; // Flag to track if score has been saved to leaderboard
         
-        // Game level system
+        // Adding game level system
         this.currentLevel = 1; // Current level (starts at 1)
         this.level2Threshold = 60; // Time in seconds to reach level 2 (1 minute)
         this.level2Activated = false; // Flag to track if level 2 has been activated
         this.levelUpMessageTime = 0; // Timer for displaying level up message
         this.showLevelUpMessage = false; // Flag to show level up message
         
-        // Game objects
+        // Adding game objects
         this.player = new Player(100, 400, this); // Pass game reference
         this.robot = new Robot(this.canvas.width / 2, 525, this); // Pass game reference
         this.platforms = this.generatePlatforms(); // Generate platforms
         this.coins = this.generateCoins(); // Generate coins
 
-        // Input handling
+        // Adding keyboard input handling
         this.keys = {}; // Keyboard input
         this.setupEventListeners(); // Set up event listeners
         
-        // Start game loop
+        // Starting game loop
         this.gameLoop();
     }
     
@@ -70,11 +70,10 @@ class Game {
         const newCoins = [];
         // Creating random coins logic
         for (let i = 0; i < numCoins; i++) {
-            // Select a random platform (excluding ground platform at index 0)
+            // Selecting a random platform
             const platformIndex = Math.floor(Math.random() * (this.platforms.length - 1)) + 1;
             const p = this.platforms[platformIndex];
-            
-            // Generate coin position on platform
+            // Generating coin position on platform
             const x = p.x + Math.random() * (p.width - 20) + 10; // Random x position on platform
             const y = p.y - 15; // Position above platform
             newCoins.push(new Coin(x, y, 12)); // Create coin with radius 12
@@ -84,30 +83,27 @@ class Game {
     
     // Creating function to generate new coins after collection
     generateNewCoins() {
-        // Count how many coins are currently uncollected
+        // Counting how many coins are currently uncollected
         const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
-        
-        // Only generate new coins if all coins have been collected
+        // Checking if all coins have been collected
         if (uncollectedCoins === 0) {
-            const newCoins = this.generateCoins(this.totalCoins); // Generate coins based on current level
-            // Replace the coins array instead of pushing (prevents array from growing indefinitely)
-            this.coins = newCoins;
+            const newCoins = this.generateCoins(this.totalCoins); // Generating coins based on current level
+            this.coins = newCoins; // Replacing the coins array instead of pushing
         }
     }
     
-    // Function to activate Level 2
+    // Creating function to activate Level 2
     activateLevel2() {
-        // Check if level 2 hasn't been activated yet and time threshold is reached
+        // Checking if level 2 hasn't been activated yet and time threshold is reached
         if (!this.level2Activated && this.gameTime >= this.level2Threshold) {
-            this.level2Activated = true; // Mark level 2 as activated
-            this.currentLevel = 2; // Set current level to 2
-            this.showLevelUpMessage = true; // Show level up message
-            this.levelUpMessageTime = 3; // Show message for 3 seconds
-            
-            // Increase game difficulty for Level 2
-            this.totalCoins = 7; // Increase total coins from 5 to 7
-            
-            // Add more platforms (3 additional platforms)
+            this.level2Activated = true; // Setting level 2 as activated
+            this.currentLevel = 2; // Setting current level to 2
+            this.showLevelUpMessage = true; // Showing level up message
+            this.levelUpMessageTime = 3; // Showing message for 3 seconds
+
+            // Increasing game difficulty for Level 2
+            this.totalCoins = 7; // Increasing total coins from 5 to 7
+            // Adding 3 more platforms
             for (let i = 0; i < 3; i++) {
                 const width = 100 + Math.random() * 80; // Random width between 100-180
                 const height = 20; // Constant height
@@ -115,18 +111,17 @@ class Game {
                 const y = 150 + Math.random() * 350; // Random y position between 150-500
                 this.platforms.push(new Platform(x, y, width, height)); // Add new platform
             }
-            
-            // Increase robot detection speed multiplier
+
+            // Increasing robot detection speed multiplier
             this.robot.level2SpeedMultiplier = 1.2; // Keep detection speed at 1.2x
             
-            // Generate new coins with increased count
+            // Generating new coins with increased count
             const uncollectedCoins = this.coins.filter(coin => !coin.collected).length;
             if (uncollectedCoins === 0) {
                 this.coins = this.generateCoins(this.totalCoins);
             }
             
-            // Add bonus score for reaching level 2
-            this.score += 500; // Bonus 500 points for reaching level 2
+            this.score += 500; // Adding bonus score for reaching level 2
         }
     }
     
@@ -169,7 +164,7 @@ class Game {
     
     // Creating input handling for continuous keyboard input function
     handleInput() {
-        // Reset horizontal movement when no key is pressed
+        // Reseting horizontal movement when no key is pressed
         this.player.velocityX = 0;
         // Adding horizontal movement
         if (this.keys['a'] || this.keys['A'] || this.keys['ArrowLeft']) {
@@ -184,9 +179,9 @@ class Game {
     checkPlatformCollisions() {
         // Adding platform collision logic
         this.platforms.forEach(p => {
-            // If player is falling and not actively dropping through platforms
+            // Checking if player is falling and not actively dropping through platforms
             if (this.player.velocityY > 0 && !this.player.isDropping) {
-                // If player is colliding with platform
+                // Checking if player is colliding with platform
                 if (this.player.x < p.x + p.width && // Left edge of player is less than right edge of platform
                     this.player.x + this.player.width > p.x && // Right edge of player is greater than left edge of platform
                     this.player.y + this.player.height > p.y && // Bottom edge of player is greater than top edge of platform
@@ -204,22 +199,19 @@ class Game {
         const px = this.player.x + this.player.width / 2; // Player centre x position
         const py = this.player.y + this.player.height / 2; // Player centre y position
         
-        // Adding coin collection logic - iterate through existing coins only
+        // Adding coin collection logic
         for (let i = 0; i < this.coins.length; i++) {
             const coin = this.coins[i];
-            
-            // If coin is not collected
+            // Checking if coin is not collected
             if (!coin.collected) {
                 const dx = px - coin.x; // Horizontal distance between player and coin
                 const dy = py - coin.y; // Vertical distance between player and coin
                 const dist = Math.sqrt(dx * dx + dy * dy); // Calculate Euclidean distance
-                
-                // If player is within the radius of the coin (collision detection)
+                // Checking if player is within the radius of the coin (collision detection)
                 if (dist < this.player.width / 2 + coin.radius) {
                     coin.collected = true; // Mark coin as collected
                     this.coinsCollected++; // Increment coins collected counter
                     this.score += 100; // Increment score by 100 points
-                    
                     // Save score every 10 coins collected
                     if (this.coinsCollected % 10 === 0) {
                         this.saveScoreToLeaderboard(); // Save score to leaderboard
@@ -227,8 +219,8 @@ class Game {
                 }
             }
         }
-        
-        // Check if all coins have been collected after the loop, then generate new set
+
+        // Checking if all coins have been collected after the loop, then generate new set
         this.generateNewCoins();
     }
     
@@ -247,39 +239,31 @@ class Game {
             date: new Date().toISOString() // Current date in ISO format
         };
         
-        // Check if user already exists in leaderboard
+        // Checking if user already exists in leaderboard
         const existingUserIndex = leaderboard.findIndex(entry => entry.username === username);
-        
         if (existingUserIndex !== -1) {
-            // User exists - check if new score is better
             const existingEntry = leaderboard[existingUserIndex];
-            
-            // Replace if new score is higher OR if score is same but time is less
+            // Checking if new score is higher OR if score is same but time is less
             if (scoreEntry.score > existingEntry.score || 
                 (scoreEntry.score === existingEntry.score && scoreEntry.time < existingEntry.time)) {
                 leaderboard[existingUserIndex] = scoreEntry; // Replace old record
             }
-            // If new score is not better, don't update
         } else {
-            // User doesn't exist - add new entry
             leaderboard.push(scoreEntry);
         }
         
-        // Saving updated leaderboard back to localStorage
-        localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+        localStorage.setItem('leaderboard', JSON.stringify(leaderboard)); // Saving updated leaderboard back to localStorage
     }
     
     // Creating game update function
     update() {
         // Check if game is not in playing state, if so return early
         if (this.gameState !== 'playing') return;
-        
         this.handleInput(); // Handle keyboard input
         this.player.update(); // Update player position and state
         this.robot.update(this.player, this.gameTime); // Update robot and check detection (pass game time)
         this.checkPlatformCollisions(); // Check platform collisions
         this.checkCoinCollection(); // Check coin collection
-        
         const now = Date.now(); // Get current time in milliseconds
         const dt = (now - this.lastTime) / 1000; // Calculate delta time in seconds
         this.gameTime += dt; // Update game time

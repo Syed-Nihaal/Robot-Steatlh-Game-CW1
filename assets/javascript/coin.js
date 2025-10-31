@@ -8,20 +8,20 @@ export class Coin {
         this.collected = false; // Coin collection status (initially not collected)
     }
     
-    // Coin draw function
+    // Creating coin draw function
     draw(context) {
         // Only draw coin if it has not been collected
         if (!this.collected) {
             context.beginPath(); // Start path for coin circle
             context.arc(this.x, this.y, this.radius, 0, Math.PI * 2); // Draw coin as circle
-            // Create radial gradient for coin effect
+            // Creating radial gradient for coin effect
             const gradient = context.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
             gradient.addColorStop(0, 'rgba(255, 215, 0, 1)'); // Inner colour (bright gold)
             gradient.addColorStop(1, 'rgba(255, 215, 0, 0.3)'); // Outer colour (faded gold)
-            context.fillStyle = gradient; // Apply gradient as fill style
-            context.fill(); // Fill coin with gradient
-            context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Set stroke colour (white)
-            context.lineWidth = 2; // Set stroke width
+            context.fillStyle = gradient; // Applying gradient as fill style
+            context.fill(); // Filling coin with gradient
+            context.strokeStyle = 'rgba(255, 255, 255, 0.8)'; // Setting stroke colour (white)
+            context.lineWidth = 2; // Setting stroke width
             context.stroke(); // Stroke coin outline
         }
     }
